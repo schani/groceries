@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Groceries">
+<meta name="theme-color" content="#08090A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F1F3ED" media="(prefers-color-scheme: light)">
+<meta name="color-scheme" content="dark light">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='22' fill='%230A6B3C'/%3E%3Crect y='21' width='64' height='22' fill='%233E9F3F'/%3E%3Crect y='42' width='64' height='22' fill='%23A6CD3A'/%3E%3C/svg%3E">
+<title>Groceries</title>
+<style>
+:root{
+  --font:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  --ground:#08090A;
+  --under:#000;
+  --ink:#fff;
+  --hint:rgba(255,255,255,.30);
+  --glyph:rgba(255,255,255,.42);
+  --backdrop:#1c1d20;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --row:64px;
+  /* spring-like curves */
+  --out:cubic-bezier(.22,1,.36,1);
+  --snap:cubic-bezier(.3,1.32,.52,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --ground:#F1F3ED;
+    --under:#DDE2D6;
+    --ink:#0D1B11;
+    --hint:rgba(13,27,17,.36);
+    --glyph:rgba(13,27,17,.40);
+    --backdrop:#d6d8dc;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--ground);overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:var(--font);color:var(--ink);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font-family:var(--font)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+svg{display:block}
+
+/* ---------- shell ---------- */
+#phone{position:fixed;left:0;right:0;top:0;height:var(--vvh,100%);overflow:hidden;background:var(--ground)}
+#app{position:absolute;inset:0;overflow:hidden}
+#statusband{position:absolute;top:0;left:0;right:0;height:var(--safe-top);background:var(--ground);z-index:4}
+#scroller{
+  position:absolute;top:var(--safe-top);left:0;right:0;bottom:0;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  touch-action:pan-y;scrollbar-width:none;
+}
+#scroller::-webkit-scrollbar{display:none}
+#content{position:relative;min-height:100%;display:flex;flex-direction:column}
+#list{position:relative}
+#tail{flex:1;min-height:150px;padding-bottom:var(--safe-bottom);position:relative;cursor:text}
+
+/* ---------- rows ---------- */
+.row{position:relative;overflow:hidden;transition:opacity .35s var(--out)}
+.row-bg{position:absolute;inset:0;background:var(--under);transition:background-color .2s}
+.glyph{position:absolute;top:0;width:72px;height:var(--row);display:grid;place-items:center;color:var(--glyph);opacity:0;will-change:transform,opacity;transition:color .18s}
+.glyph.del{right:0}
+.glyph.det{left:0}
+.row.armed-del .row-bg{background:#E5372E}
+.row.armed-del .glyph.del{color:#fff}
+.row.armed-det .row-bg{background:#0F2A18}
+.row.armed-det .glyph.det{color:#B9E45C}
+@media (prefers-color-scheme: light){
+  .row.armed-det .row-bg{background:#CFE6B8}
+  .row.armed-det .glyph.det{color:#0F5F33}
+}
+.row-fg{position:relative;background:var(--c);color:var(--tc);transition:background-color .5s var(--out),color .5s var(--out)}
+.head{
+  display:flex;align-items:center;gap:12px;min-height:var(--row);padding:9px 14px 9px 20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09), inset 0 -1px 0 rgba(0,0,0,.10);
+}
+.text{flex:1;min-width:0}
+.title{font-size:22px;font-weight:700;letter-spacing:-.024em;line-height:27px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desc{display:none;font-size:14px;font-weight:500;line-height:18px;letter-spacing:-.006em;opacity:.68;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.row.has-desc .desc{display:block}
+.row.expanded .desc{display:none}
+.thumb{display:none;flex:none;width:44px;height:44px;border-radius:11px;overflow:hidden;position:relative;cursor:zoom-in;
+  box-shadow:0 2px 8px rgba(0,0,0,.22);transition:opacity .3s var(--out),transform .4s var(--spring)}
+.thumb::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none}
+.row.has-photo .thumb{display:block}
+.row.expanded .thumb{opacity:0;transform:scale(.6);pointer-events:none}
+
+.title-input{
+  display:block;width:100%;height:27px;padding:0;margin:0;border:0;border-radius:0;outline:none;background:transparent;
+  -webkit-appearance:none;appearance:none;color:inherit;caret-color:currentColor;
+  font:700 22px/27px var(--font);letter-spacing:-.024em;
+}
+.title-input::placeholder{color:currentColor;opacity:.45}
+
+#app.editing .row:not(.is-editing){opacity:.28}
+.row.entering .row-fg{transform-origin:50% 0;animation:foldIn .46s var(--out) both}
+@keyframes foldIn{from{transform:perspective(520px) rotateX(-88deg);filter:brightness(.4)}to{transform:none;filter:none}}
+.row.growing{transition:height .4s var(--out)}
+.row.collapsing{transition:height .3s var(--out),opacity .3s}
+.row.shifting{transition:transform .34s var(--out)}
+.row.lifted{overflow:visible;z-index:20}
+.row.lifted .row-bg{display:none}
+.row.lifted .row-fg{transition:transform .35s var(--spring),box-shadow .3s var(--out),background-color .5s var(--out)}
+.row.up .row-fg{transform:scale(1.035);box-shadow:0 22px 44px -10px rgba(0,0,0,.65),0 6px 16px rgba(0,0,0,.35)}
+@media (prefers-color-scheme: light){
+  .row.up .row-fg{box-shadow:0 22px 40px -12px rgba(16,40,20,.45),0 6px 14px rgba(16,40,20,.2)}
+}
+#app.dragging{cursor:grabbing}
+
+/* ---------- details ---------- */
+.details{height:0;overflow:hidden;transition:height .44s var(--out);background:rgba(0,0,0,.13)}
+.details-inner{padding:14px 16px 18px;display:flex;flex-direction:column;gap:12px}
+.note{
+  display:block;width:100%;min-height:50px;resize:none;border:0;outline:none;border-radius:14px;
+  padding:13px 14px;background:rgba(0,0,0,.16);color:inherit;caret-color:currentColor;
+  font:500 17px/1.35 var(--font);letter-spacing:-.01em;-webkit-appearance:none;appearance:none;
+}
+.ink-dark .note{background:rgba(255,255,255,.34)}
+.note::placeholder{color:currentColor;opacity:.5}
+.add-photo{
+  position:relative;display:flex;align-items:center;justify-content:center;gap:10px;height:96px;border-radius:16px;cursor:pointer;
+  border:1.5px dashed color-mix(in srgb,currentColor 40%,transparent);font-size:16px;font-weight:600;letter-spacing:-.01em;opacity:.9;
+}
+.add-photo:active{background:rgba(0,0,0,.08)}
+.preview{position:relative;display:block;width:100%;height:220px;border-radius:16px;overflow:hidden;cursor:zoom-in;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.preview img{width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none}
+.photo-actions{display:flex;gap:10px;margin-top:10px}
+.pill{
+  position:relative;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:22px;
+  background:rgba(0,0,0,.18);font-size:15px;font-weight:600;letter-spacing:-.01em;cursor:pointer;
+  transition:transform .3s var(--spring),background-color .2s;
+}
+.ink-dark .pill{background:rgba(255,255,255,.34)}
+.pill:active,.add-photo:active{transform:scale(.97)}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* ---------- pull-to-add fold ---------- */
+#pull{
+  position:absolute;left:0;right:0;top:calc(-1 * var(--row));height:var(--row);
+  background:var(--c,#0A6B3C);color:var(--tc,#fff);
+  transform-origin:50% 100%;transform:perspective(340px) rotateX(-90deg);backface-visibility:hidden;
+  pointer-events:none;z-index:2;
+}
+#pull .head{box-shadow:none}
+#pull .title{opacity:.62;transition:opacity .2s}
+#pull.armed .title{opacity:1}
+#pull .shade{position:absolute;inset:0;background:#000;opacity:.7;pointer-events:none}
+
+#hint{
+  position:absolute;left:0;right:0;top:min(30vh,240px);text-align:center;
+  font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--hint);
+  opacity:0;transform:translateY(6px);transition:opacity .5s var(--out),transform .6s var(--out);pointer-events:none;
+}
+#hint svg{display:inline-block;vertical-align:-3px;margin-right:6px}
+#app.empty #hint{opacity:1;transform:none}
+#app.empty.pulling #hint{opacity:0}
+
+/* ---------- photo viewer ---------- */
+#viewer{
+  position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(0,0,0,.96);
+  opacity:0;pointer-events:none;transition:opacity .3s var(--out);cursor:zoom-out;
+  padding:calc(var(--safe-top) + 12px) 0 calc(var(--safe-bottom) + 12px);
+}
+#viewer img{max-width:100%;max-height:100%;object-fit:contain;transform:scale(.88);transition:transform .45s var(--spring);-webkit-user-drag:none}
+#viewer.open{opacity:1;pointer-events:auto}
+#viewer.open img{transform:none}
+
+#toast{
+  position:absolute;left:50%;bottom:calc(var(--safe-bottom) + 22px);z-index:70;max-width:86%;
+  padding:12px 18px;border-radius:22px;background:rgba(40,40,42,.94);color:#fff;font-size:15px;font-weight:600;
+  transform:translate(-50%,20px);opacity:0;transition:opacity .3s,transform .45s var(--spring);pointer-events:none;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- desktop review frame ---------- */
+.deco{display:none}
+@media (min-width:501px){
+  html,body{background:var(--backdrop)}
+  body{display:grid;place-items:center;min-height:100%;overflow:auto}
+  #phone{
+    position:relative;left:auto;right:auto;top:auto;width:390px;height:844px;border-radius:56px;
+    --safe-top:54px;--safe-bottom:34px;transform:translateZ(0);
+    box-shadow:0 0 0 10px #0b0b0d,0 0 0 11px #2c2d31,0 0 0 13px #141416,
+      0 50px 100px -30px rgba(0,0,0,.6),0 30px 60px -30px rgba(0,0,0,.45);
+  }
+  .deco{display:block;position:absolute;pointer-events:none;z-index:80}
+  .island{top:11px;left:50%;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#000}
+  .sbar{top:0;left:0;right:0;height:54px;color:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:4px 34px 0 50px;font:600 17px/1 var(--font);letter-spacing:-.02em}
+  .sbar .icons{display:flex;gap:6px;align-items:center}
+  .homebar{bottom:8px;left:50%;width:136px;height:5px;margin-left:-68px;border-radius:3px;background:var(--ink);opacity:.55}
+  #phone.viewing .sbar,#phone.viewing .homebar{color:#fff;background-color:transparent}
+  #phone.viewing .homebar{background:#fff}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:1ms !important;animation-duration:1ms !important}
+}
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="app">
+    <div id="statusband"></div>
+    <div id="scroller">
+      <div id="content">
+        <div id="pull" aria-hidden="true"><div class="head"><div class="text"><div class="title" id="pullLabel">Pull to add</div></div></div><div class="shade"></div></div>
+        <div id="list" role="list" aria-label="Groceries"></div>
+        <div id="tail"><div id="hint"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v11M3.5 8.5 8 13l4.5-4.5"/></svg>Pull down to add</div></div>
+      </div>
+    </div>
+    <div id="viewer" role="dialog" aria-label="Photo"><img alt=""></div>
+    <div id="toast" role="status"></div>
+  </div>
+  <div class="deco sbar" aria-hidden="true"><span>9:41</span><span class="icons">
+    <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+    <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.4c2.3 0 4.4.9 6 2.4l1.1-1.1A10 10 0 0 0 8 .9 10 10 0 0 0 .9 3.7L2 4.8a8.4 8.4 0 0 1 6-2.4Zm0 3.2c1.4 0 2.7.5 3.7 1.4l1.1-1.1A7 7 0 0 0 8 4a7 7 0 0 0-4.8 1.9L4.3 7c1-.9 2.3-1.4 3.7-1.4Zm0 3.1c.6 0 1.2.2 1.6.6L8 11 6.4 9.3c.4-.4 1-.6 1.6-.6Z"/></svg>
+    <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.8" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2.5" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2Z" fill="currentColor" opacity=".45"/></svg>
+  </span></div>
+  <div class="deco island" aria-hidden="true"></div>
+  <div class="deco homebar" aria-hidden="true"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+const KEY = 'groceries-p5';
+const ROW = 64;
+const $ = (s, r = document) => r.querySelector(s);
+const phone = $('#phone'), app = $('#app'), scroller = $('#scroller'), content = $('#content'),
+      list = $('#list'), pull = $('#pull'), pullLabel = $('#pullLabel'),
+      viewer = $('#viewer'), viewerImg = $('#viewer img'), toastEl = $('#toast');
+const reducedMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const lightMQ = matchMedia('(prefers-color-scheme: light)');
+const D = ms => reducedMQ.matches ? 0 : ms;
+const haptic = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+const ICON = {
+  del: '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6.5 6.5l13 13M19.5 6.5l-13 13"/></svg>',
+  det: '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h16M5 13h16M5 19h9"/><circle cx="20" cy="19" r="2.2" fill="currentColor" stroke="none"/></svg>',
+  camera: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.3l1.4-2h5.6l1.4 2h1.3A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg>',
+  swap: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5"/></svg>',
+  trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15M9.5 6.5V4.8c0-.7.6-1.3 1.3-1.3h2.4c.7 0 1.3.6 1.3 1.3v1.7M6.5 6.5l.8 12.1c.1 1 .9 1.9 2 1.9h5.4c1 0 1.9-.8 2-1.9l.8-12.1"/></svg>'
+};
+
+/* ================= data ================= */
+let items = [];
+let expandedId = null;
+let editing = null;
+const rowEls = new Map();
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-5);
+const getItem = id => items.find(i => i.id === id);
+
+function save() {
+  try {
+    const keep = items.filter(i => i.title && i.title.trim());
+    localStorage.setItem(KEY, JSON.stringify({ v: 1, items: keep }));
+    return true;
+  } catch (e) {
+    toast('Storage is full — photo not saved');
+    return false;
+  }
+}
+function load() {
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) {}
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.items)) { items = d.items.filter(i => i && i.id && i.title); return; }
+    } catch (e) {}
+  }
+  items = seed();
+  save();
+}
+
+/* --- locally drawn seed photos --- */
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; }
+function drawAvocados() {
+  const [c, x] = canvas(720, 720);
+  let g = x.createLinearGradient(0, 0, 720, 720);
+  g.addColorStop(0, '#EAD9B7'); g.addColorStop(1, '#C9A675');
+  x.fillStyle = g; x.fillRect(0, 0, 720, 720);
+  x.strokeStyle = 'rgba(110,70,30,.09)'; x.lineWidth = 3;
+  for (let i = 0; i < 34; i++) { const y = i * 23 + (i % 3) * 4; x.beginPath(); x.moveTo(0, y); x.bezierCurveTo(240, y + 14, 480, y - 12, 720, y + 6); x.stroke(); }
+  const pear = k => {
+    x.beginPath(); x.moveTo(0, -170 * k);
+    x.bezierCurveTo(72 * k, -170 * k, 96 * k, -60 * k, 132 * k, 40 * k);
+    x.bezierCurveTo(166 * k, 142 * k, 102 * k, 212 * k, 0, 212 * k);
+    x.bezierCurveTo(-102 * k, 212 * k, -166 * k, 142 * k, -132 * k, 40 * k);
+    x.bezierCurveTo(-96 * k, -60 * k, -72 * k, -170 * k, 0, -170 * k); x.closePath();
+  };
+  const half = (cx, cy, rot, s, pit) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot); x.scale(s, s);
+    x.shadowColor = 'rgba(70,40,10,.38)'; x.shadowBlur = 44; x.shadowOffsetY = 22;
+    pear(1); x.fillStyle = '#25390F'; x.fill();
+    x.shadowColor = 'transparent';
+    pear(.94); x.fillStyle = '#6F9A2E'; x.fill();
+    pear(.89);
+    let fg = x.createRadialGradient(0, 70, 10, 0, 40, 230);
+    fg.addColorStop(0, '#F6F3AE'); fg.addColorStop(.55, '#DCE77D'); fg.addColorStop(1, '#A4C443');
+    x.fillStyle = fg; x.fill();
+    if (pit) {
+      x.shadowColor = 'rgba(60,40,0,.35)'; x.shadowBlur = 18; x.shadowOffsetY = 8;
+      let pg = x.createRadialGradient(-22, 42, 6, 0, 72, 70);
+      pg.addColorStop(0, '#C48A50'); pg.addColorStop(.5, '#8A5427'); pg.addColorStop(1, '#4F2B10');
+      x.beginPath(); x.arc(0, 72, 64, 0, Math.PI * 2); x.fillStyle = pg; x.fill();
+      x.shadowColor = 'transparent';
+      x.beginPath(); x.ellipse(-20, 46, 18, 11, -.6, 0, Math.PI * 2); x.fillStyle = 'rgba(255,240,220,.35)'; x.fill();
+    } else {
+      let hg = x.createRadialGradient(8, 84, 10, 0, 72, 68);
+      hg.addColorStop(0, '#E6EC93'); hg.addColorStop(.75, '#C6D866'); hg.addColorStop(1, '#93AE3A');
+      x.beginPath(); x.arc(0, 72, 62, 0, Math.PI * 2); x.fillStyle = hg; x.fill();
+    }
+    x.restore();
+  };
+  half(240, 330, -0.28, 1, true);
+  half(490, 400, 0.32, 0.92, false);
+  return c.toDataURL('image/jpeg', 0.84);
+}
+function drawTomatoes() {
+  const [c, x] = canvas(720, 720);
+  let g = x.createRadialGradient(360, 300, 60, 360, 360, 560);
+  g.addColorStop(0, '#2C3B42'); g.addColorStop(1, '#0E1519');
+  x.fillStyle = g; x.fillRect(0, 0, 720, 720);
+  x.strokeStyle = '#3D6A26'; x.lineWidth = 12; x.lineCap = 'round';
+  x.beginPath(); x.moveTo(90, 150); x.bezierCurveTo(260, 90, 440, 200, 650, 170); x.stroke();
+  const toms = [[190, 330, 92], [355, 300, 102], [520, 335, 96], [280, 488, 92], [445, 500, 98], [600, 505, 80], [140, 520, 76]];
+  x.lineWidth = 6; x.strokeStyle = '#4C7F2E';
+  toms.forEach(([cx, cy, r]) => { x.beginPath(); x.moveTo(cx, cy - r * .8); x.quadraticCurveTo(cx + 10, cy - r * 1.6, cx + (360 - cx) * .15, 165 + (cx - 360) * .02); x.stroke(); });
+  toms.forEach(([cx, cy, r]) => {
+    x.save();
+    x.shadowColor = 'rgba(0,0,0,.55)'; x.shadowBlur = 36; x.shadowOffsetY = 18;
+    let tg = x.createRadialGradient(cx - r * .38, cy - r * .42, r * .08, cx, cy, r * 1.05);
+    tg.addColorStop(0, '#FF9A78'); tg.addColorStop(.35, '#EE4128'); tg.addColorStop(.8, '#B0170D'); tg.addColorStop(1, '#7A0D07');
+    x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fillStyle = tg; x.fill();
+    x.restore();
+    x.beginPath(); x.ellipse(cx - r * .36, cy - r * .42, r * .2, r * .11, -.7, 0, Math.PI * 2); x.fillStyle = 'rgba(255,255,255,.55)'; x.fill();
+    x.save(); x.translate(cx, cy - r * .82); x.fillStyle = '#4E8F2C';
+    for (let k = 0; k < 5; k++) { x.rotate(Math.PI * 2 / 5); x.beginPath(); x.ellipse(0, r * .17, r * .07, r * .2, 0, 0, Math.PI * 2); x.fill(); }
+    x.beginPath(); x.arc(0, 0, r * .07, 0, Math.PI * 2); x.fillStyle = '#3A6E1F'; x.fill();
+    x.restore();
+  });
+  return c.toDataURL('image/jpeg', 0.84);
+}
+function seed() {
+  const mk = (title, desc = '', photo = null) => ({ id: uid(), title, desc, photo });
+  return [
+    mk('Avocados', 'Ripe ones, for Sunday toast', drawAvocados()),
+    mk('Sourdough loaf', 'From the bakery on 5th'),
+    mk('Oat milk'),
+    mk('Cherry tomatoes', '', drawTomatoes()),
+    mk('Greek yogurt', 'Plain — the big tub'),
+    mk('Baby spinach'),
+    mk('Lemons'),
+    mk('Dark chocolate')
+  ];
+}
+
+/* ================= colour ================= */
+const PAL = {
+  dark:  ['#08603A', '#16833F', '#47A33C', '#9BCB3B'],
+  light: ['#138A4B', '#3EA647', '#86C34F', '#C9E37C']
+};
+const hexRGB = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function colorAt(i, n) {
+  const stops = PAL[lightMQ.matches ? 'light' : 'dark'].map(hexRGB);
+  const t = Math.min(1, i / Math.max(n - 1, 7));
+  const seg = t * (stops.length - 1);
+  const k = Math.min(stops.length - 2, Math.floor(seg)), f = seg - k;
+  return stops[k].map((v, j) => Math.round(v + (stops[k + 1][j] - v) * f));
+}
+function lum(c) {
+  const [r, g, b] = c.map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); });
+  return .2126 * r + .7152 * g + .0722 * b;
+}
+function paint(el, i, n) {
+  const c = colorAt(i, n), L = lum(c);
+  const dark = (L + .05) / (.016 + .05) > 1.5 * (1.05 / (L + .05));
+  el.style.setProperty('--c', `rgb(${c.join(',')})`);
+  el.style.setProperty('--tc', dark ? '#0B2413' : '#FFFFFF');
+  el.classList.toggle('ink-dark', dark);
+}
+function liveRows() { return [...list.children].filter(r => !r.classList.contains('leaving')); }
+function recolor(order) {
+  const rows = order || liveRows();
+  rows.forEach((r, i) => paint(r, i, rows.length));
+}
+
+/* ================= rendering ================= */
+function buildRow(it) {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.setAttribute('role', 'listitem');
+  row.dataset.id = it.id;
+  row.innerHTML =
+    `<div class="row-bg"><div class="glyph det">${ICON.det}</div><div class="glyph del">${ICON.del}</div></div>` +
+    `<div class="row-fg"><div class="head"><div class="text"><div class="title"></div><div class="desc"></div></div>` +
+    `<span class="thumb" role="button" aria-label="View photo"><img alt="" draggable="false"></span></div>` +
+    `<div class="details"></div></div>`;
+  return row;
+}
+function updateRow(row, it) {
+  if (!editing || editing.id !== it.id) $('.title', row).textContent = it.title;
+  const d = (it.desc || '').trim();
+  $('.desc', row).textContent = d.split('\n')[0];
+  row.classList.toggle('has-desc', !!d);
+  row.classList.toggle('has-photo', !!it.photo);
+  const img = $('.thumb img', row);
+  if (it.photo) { if (img.getAttribute('src') !== it.photo) img.src = it.photo; }
+  else img.removeAttribute('src');
+}
+function render() {
+  const ids = new Set(items.map(i => i.id));
+  for (const [id, el] of rowEls) if (!ids.has(id)) { el.remove(); rowEls.delete(id); }
+  let prev = null;
+  for (const it of items) {
+    let el = rowEls.get(it.id);
+    if (!el) { el = buildRow(it); rowEls.set(it.id, el); }
+    updateRow(el, it);
+    let want = prev ? prev.nextSibling : list.firstChild;
+    while (want && want.classList.contains('leaving')) want = want.nextSibling;
+    if (want !== el) list.insertBefore(el, want);
+    prev = el;
+  }
+  recolor();
+  updateEmpty();
+}
+function updateEmpty() { app.classList.toggle('empty', items.length === 0); }
+
+function ensureVisible(row, extra = 0) {
+  if (!row) return;
+  const r = row.getBoundingClientRect(), s = scroller.getBoundingClientRect();
+  const bottom = r.top + Math.max(r.height, extra);
+  if (bottom > s.bottom - 12) scroller.scrollBy({ top: bottom - s.bottom + 24, behavior: reducedMQ.matches ? 'auto' : 'smooth' });
+  else if (r.top < s.top) scroller.scrollBy({ top: r.top - s.top, behavior: reducedMQ.matches ? 'auto' : 'smooth' });
+}
+
+/* ================= add / edit / delete ================= */
+function addItem(index, anim = true) {
+  const it = { id: uid(), title: '', desc: '', photo: null };
+  items.splice(index, 0, it);
+  render();
+  const row = rowEls.get(it.id);
+  if (anim && !reducedMQ.matches) {
+    row.style.height = '0px';
+    row.classList.add('entering');
+    row.offsetHeight;
+    row.classList.add('growing');
+    row.style.height = ROW + 'px';
+    setTimeout(() => { row.classList.remove('growing', 'entering'); row.style.height = ''; }, 460);
+  }
+  startEdit(it.id, true);
+  return it;
+}
+
+function startEdit(id, isNew = false) {
+  const row = rowEls.get(id), it = getItem(id);
+  if (!row || !it) return;
+  const title = $('.title', row);
+  const input = document.createElement('input');
+  input.className = 'title-input';
+  input.type = 'text';
+  input.value = it.title;
+  input.placeholder = isNew ? 'New item' : '';
+  input.enterKeyHint = isNew ? 'next' : 'done';
+  input.autocomplete = 'off';
+  input.setAttribute('autocapitalize', 'sentences');
+  input.setAttribute('autocorrect', 'on');
+  input.maxLength = 80;
+  input.setAttribute('aria-label', 'Item name');
+  title.textContent = '';
+  title.appendChild(input);
+  editing = { id, isNew, row, input, orig: it.title };
+  row.classList.add('is-editing');
+  app.classList.add('editing');
+  input.addEventListener('keydown', onEditKey);
+  input.addEventListener('blur', onEditBlur);
+  input.focus({ preventScroll: true });
+  const n = input.value.length;
+  try { input.setSelectionRange(n, n); } catch (e) {}
+  ensureVisible(row, ROW);
+}
+function onEditKey(e) {
+  if (e.isComposing || e.keyCode === 229) return;
+  if (e.key === 'Enter') { e.preventDefault(); commitEdit(true); }
+  else if (e.key === 'Escape') { e.preventDefault(); if (editing) editing.input.value = editing.isNew ? '' : editing.orig; commitEdit(false); }
+}
+function onEditBlur() { commitEdit(false); }
+function commitEdit(viaEnter) {
+  if (!editing) return;
+  const ed = editing; editing = null;
+  const { input, row, id, isNew } = ed;
+  input.removeEventListener('blur', onEditBlur);
+  input.removeEventListener('keydown', onEditKey);
+  const val = input.value.replace(/\s+/g, ' ').trim();
+  const it = getItem(id);
+  row.classList.remove('is-editing');
+  if (!it) { app.classList.remove('editing'); return; }
+  if (!val) {
+    if (isNew) { deleteItem(id); }
+    else $('.title', row).textContent = it.title;
+    app.classList.remove('editing');
+    if (document.activeElement === input) input.blur();
+    return;
+  }
+  it.title = val;
+  save();
+  if (viaEnter && isNew) {
+    // rapid entry: open the next row first so the keyboard never drops
+    addItem(items.indexOf(it) + 1);
+    $('.title', row).textContent = it.title;
+    return;
+  }
+  $('.title', row).textContent = it.title;
+  app.classList.remove('editing');
+  if (document.activeElement === input) input.blur();
+}
+
+function deleteItem(id, slide = false) {
+  const row = rowEls.get(id);
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0 || !row) return;
+  items.splice(idx, 1);
+  rowEls.delete(id);
+  if (expandedId === id) expandedId = null;
+  save();
+  row.classList.add('leaving');
+  const collapse = () => {
+    row.style.height = row.offsetHeight + 'px';
+    row.offsetHeight;
+    row.classList.add('collapsing');
+    row.style.height = '0px';
+    setTimeout(() => row.remove(), D(320));
+  };
+  if (slide) {
+    const fg = $('.row-fg', row);
+    fg.style.transition = `transform ${D(230)}ms cubic-bezier(.4,0,.6,1)`;
+    fg.style.transform = 'translate3d(-105%,0,0)';
+    const g = $('.glyph.del', row);
+    g.style.transition = `transform ${D(230)}ms cubic-bezier(.4,0,.6,1)`;
+    g.style.transform = `translateX(${-(row.offsetWidth - 72)}px)`;
+    setTimeout(collapse, D(200));
+  } else collapse();
+  recolor();
+  updateEmpty();
+}
+
+/* ================= details panel ================= */
+function setExpanded(id) {
+  if (expandedId && expandedId !== id) collapseDetails(expandedId);
+  expandedId = id;
+  if (id) expandDetails(id);
+}
+function expandDetails(id) {
+  const row = rowEls.get(id), it = getItem(id);
+  if (!row || !it) return;
+  const d = $('.details', row);
+  clearTimeout(d._t);
+  buildDetails(d, row, it);
+  row.classList.add('expanded');
+  const h = d.scrollHeight;
+  d.style.height = '0px'; d.offsetHeight; d.style.height = h + 'px';
+  d._t = setTimeout(() => { if (row.classList.contains('expanded')) d.style.height = 'auto'; }, D(460));
+  setTimeout(() => ensureVisible(row), D(120));
+}
+function collapseDetails(id, instant = false) {
+  const row = rowEls.get(id);
+  if (!row) return;
+  const d = $('.details', row);
+  const ta = $('.note', d);
+  if (ta && document.activeElement === ta) ta.blur();
+  clearTimeout(d._t);
+  if (instant) d.style.transition = 'none';
+  d.style.height = d.offsetHeight + 'px'; d.offsetHeight; d.style.height = '0px';
+  row.classList.remove('expanded');
+  if (instant) { d.offsetHeight; d.style.transition = ''; d.innerHTML = ''; return; }
+  d._t = setTimeout(() => { if (!row.classList.contains('expanded')) d.innerHTML = ''; }, D(460));
+}
+function buildDetails(d, row, it) {
+  d.innerHTML = `<div class="details-inner"><textarea class="note" rows="1" placeholder="Add a note" aria-label="Note"></textarea><div class="photo"></div></div>`;
+  const ta = $('.note', d);
+  ta.value = it.desc || '';
+  let t = null;
+  const autosize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  ta.addEventListener('input', () => {
+    autosize(); it.desc = ta.value; updateRow(row, it);
+    clearTimeout(t); t = setTimeout(save, 400);
+  });
+  ta.addEventListener('blur', () => { it.desc = ta.value.trim(); ta.value = it.desc; updateRow(row, it); save(); });
+  requestAnimationFrame(autosize);
+  autosize();
+  renderPhoto($('.photo', d), row, it);
+}
+function renderPhoto(box, row, it) {
+  if (it.photo) {
+    box.innerHTML = `<span class="preview" role="button" aria-label="View photo"><img alt="" draggable="false"></span>` +
+      `<div class="photo-actions"><label class="pill">${ICON.swap}<span>Replace</span><input type="file" accept="image/*"></label>` +
+      `<button class="pill" type="button" data-act="remove">${ICON.trash}<span>Remove</span></button></div>`;
+    $('.preview img', box).src = it.photo;
+    $('.preview', box).addEventListener('click', () => openViewer(it.photo));
+    $('[data-act=remove]', box).addEventListener('click', () => {
+      it.photo = null; save(); updateRow(row, it); renderPhoto(box, row, it);
+    });
+  } else {
+    box.innerHTML = `<label class="add-photo">${ICON.camera}<span>Add photo</span><input type="file" accept="image/*"></label>`;
+  }
+  $('input[type=file]', box).addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    try {
+      const url = await downscale(f, 1024);
+      const prev = it.photo;
+      it.photo = url;
+      if (!save()) { it.photo = prev; return; }
+      updateRow(row, it); renderPhoto(box, row, it);
+    } catch (err) { toast('Couldn’t read that image'); }
+  });
+}
+function downscale(file, max) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * s)), h = Math.max(1, Math.round(img.naturalHeight * s));
+      const [c, x] = canvas(w, h);
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
+    img.src = url;
+  });
+}
+
+/* ================= viewer / toast ================= */
+function openViewer(src) {
+  viewerImg.src = src;
+  viewer.classList.add('open');
+  phone.classList.add('viewing');
+}
+function closeViewer() { viewer.classList.remove('open'); phone.classList.remove('viewing'); }
+viewer.addEventListener('click', closeViewer);
+let toastT = null;
+function toast(msg) {
+  toastEl.textContent = msg; toastEl.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+
+/* ================= pull-to-add ================= */
+let pullD = 0;
+function rubber(raw) { return raw <= ROW ? raw : ROW + (raw - ROW) * 0.38; }
+function setPull(d) {
+  pullD = Math.max(0, d);
+  content.style.transform = pullD ? `translate3d(0,${pullD}px,0)` : '';
+  const p = Math.min(1, pullD / ROW);
+  pull.style.transform = `perspective(340px) rotateX(${(p - 1) * 90}deg)`;
+  $('.shade', pull).style.opacity = ((1 - p) * .75).toFixed(3);
+  const armed = pullD >= ROW;
+  if (armed !== pull.classList.contains('armed')) {
+    pull.classList.toggle('armed', armed);
+    pullLabel.textContent = armed ? 'Release to add' : 'Pull to add';
+    if (armed) haptic(6);
+  }
+  paint(pull, 0, items.length + 1);
+  app.classList.toggle('pulling', pullD > 0);
+}
+function endPull() {
+  const d = pullD;
+  if (d >= ROW) {
+    const extra = d - ROW;
+    content.style.transition = 'none';
+    pull.style.transition = 'none';
+    setPull(0);
+    content.style.transform = extra ? `translate3d(0,${extra}px,0)` : '';
+    addItem(0, false);
+    content.offsetHeight;
+    if (extra) {
+      content.style.transition = `transform ${D(420)}ms var(--snap)`;
+      content.style.transform = '';
+      setTimeout(() => { content.style.transition = ''; }, D(440));
+    } else content.style.transition = '';
+    pull.style.transition = '';
+  } else if (d > 0) {
+    content.style.transition = `transform ${D(380)}ms var(--out)`;
+    pull.style.transition = `transform ${D(380)}ms var(--out)`;
+    setPull(0);
+    setTimeout(() => { content.style.transition = ''; pull.style.transition = ''; }, D(400));
+  }
+}
+
+/* wheel / trackpad overscroll at top */
+let wheelRaw = 0, wheelT = null, wheelCool = 0;
+scroller.addEventListener('wheel', e => {
+  if (G.active || editing || viewer.classList.contains('open')) return;
+  const now = performance.now();
+  if (now < wheelCool) { if (scroller.scrollTop <= 0 && e.deltaY < 0) e.preventDefault(); return; }
+  if (pullD > 0 || (scroller.scrollTop <= 0 && e.deltaY < 0)) {
+    e.preventDefault();
+    const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    wheelRaw = Math.max(0, wheelRaw - dy * 0.55);
+    setPull(rubber(wheelRaw));
+    clearTimeout(wheelT);
+    wheelT = setTimeout(() => { wheelRaw = 0; wheelCool = performance.now() + 650; endPull(); }, 170);
+  }
+}, { passive: false });
+
+/* ================= gestures ================= */
+const SLOP = 8, LONGPRESS = 350;
+let G = { active: false };
+
+scroller.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (G.active) return;
+  const t = e.target;
+  if (t.closest('.details') || t.closest('input,textarea')) return;
+  e.preventDefault(); // keep focus where it is; no text selection
+  const row = t.closest('.row');
+  const usable = row && !row.classList.contains('leaving');
+  G = {
+    active: true, id: e.pointerId, type: e.pointerType, target: t,
+    row: usable ? row : null, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY,
+    t0: performance.now(), st0: scroller.scrollTop, mode: null, wasEditing: !!editing,
+    vx: 0, px: e.clientX, pt: performance.now(), lastX: 0
+  };
+  if (G.row && !editing) G.lp = setTimeout(startDrag, LONGPRESS);
+});
+
+window.addEventListener('pointermove', e => {
+  if (!G.active || e.pointerId !== G.id) return;
+  const now = performance.now();
+  const dtv = now - G.pt;
+  if (dtv > 0) { G.vx = .7 * ((e.clientX - G.px) / dtv) + .3 * G.vx; G.px = e.clientX; G.pt = now; }
+  G.x = e.clientX; G.y = e.clientY;
+  const dx = G.x - G.x0, dy = G.y - G.y0;
+  if (!G.mode) {
+    if (Math.hypot(dx, dy) < SLOP) return;
+    clearTimeout(G.lp);
+    if (Math.abs(dx) > Math.abs(dy) && G.row && !G.wasEditing && !G.row.classList.contains('entering')) {
+      G.mode = 'swipe';
+      G.fg = $('.row-fg', G.row); G.gDel = $('.glyph.del', G.row); G.gDet = $('.glyph.det', G.row);
+      G.fg.style.transition = 'none';
+      G.ox = dx > 0 ? SLOP : -SLOP;
+    } else if (dy > 0 && scroller.scrollTop <= 0 && !G.wasEditing && !viewer.classList.contains('open')) {
+      G.mode = 'pull'; G.oy = SLOP;
+      content.style.transition = 'none'; pull.style.transition = 'none';
+    } else {
+      G.mode = G.type === 'mouse' ? 'mscroll' : 'scroll';
+    }
+  }
+  switch (G.mode) {
+    case 'swipe': swipeMove(dx - G.ox); break;
+    case 'pull': setPull(rubber(Math.max(0, dy - G.oy))); break;
+    case 'mscroll': scroller.scrollTop = G.st0 - dy; break;
+    case 'drag': if (e.cancelable) e.preventDefault(); break;
+  }
+}, { passive: false });
+
+// Touch: stop native scrolling once we own the gesture.
+scroller.addEventListener('touchmove', e => {
+  if (!G.active) return;
+  if (G.mode === 'swipe' || G.mode === 'pull' || G.mode === 'drag') { e.preventDefault(); return; }
+  if (!G.mode && e.touches[0]) {
+    const dx = e.touches[0].clientX - G.x0, dy = e.touches[0].clientY - G.y0;
+    if ((Math.abs(dx) > Math.abs(dy) && G.row) || (dy > 0 && scroller.scrollTop <= 0)) e.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('pointerup', e => endGesture(e, false));
+window.addEventListener('pointercancel', e => endGesture(e, true));
+
+function endGesture(e, cancelled) {
+  if (!G.active || e.pointerId !== G.id) return;
+  clearTimeout(G.lp);
+  const mode = G.mode;
+  G.active = false;
+  if (mode === 'swipe') endSwipe(cancelled);
+  else if (mode === 'pull') { if (cancelled) pullD = Math.min(pullD, ROW - 1); endPull(); }
+  else if (mode === 'drag') endDrag();
+  else if (!mode && !cancelled) onTap();
+}
+
+function onTap() {
+  if (G.wasEditing) {
+    if (editing) editing.input.blur();
+    return;
+  }
+  if (viewer.classList.contains('open')) return;
+  const t = G.target;
+  const thumb = t.closest('.thumb');
+  if (thumb && G.row) { const it = getItem(G.row.dataset.id); if (it && it.photo) openViewer(it.photo); return; }
+  if (G.row) {
+    const id = G.row.dataset.id;
+    if (G.row.classList.contains('expanded')) { setExpanded(null); return; }
+    const ae = document.activeElement;
+    if (ae && ae.classList && ae.classList.contains('note')) ae.blur();
+    startEdit(id, false);
+    return;
+  }
+  if (t.closest('#tail') || t === content || t === list) {
+    const ae = document.activeElement;
+    if (ae && ae.classList && ae.classList.contains('note')) { ae.blur(); return; }
+    addItem(items.length);
+  }
+}
+
+/* ---- swipe ---- */
+function thresholds() { return { del: Math.max(110, G.row.offsetWidth * 0.32), det: 76 }; }
+function swipeMove(dx) {
+  const { del, det } = thresholds();
+  let x = dx;
+  if (x > 0) { const max = 120; if (x > max) x = max + (x - max) * 0.22; }
+  G.lastX = x;
+  G.fg.style.transform = `translate3d(${x}px,0,0)`;
+  const aDel = -x > del, aDet = x > det;
+  if (aDel !== G.row.classList.contains('armed-del') || aDet !== G.row.classList.contains('armed-det')) {
+    if (aDel || aDet) haptic(6);
+    G.row.classList.toggle('armed-del', aDel);
+    G.row.classList.toggle('armed-det', aDet);
+  }
+  if (x < 0) {
+    const p = Math.min(1, -x / del);
+    G.gDel.style.opacity = p.toFixed(3);
+    G.gDel.style.transform = `translateX(${aDel ? x + del : 0}px) scale(${(.55 + .45 * p).toFixed(3)})`;
+    G.gDet.style.opacity = 0;
+  } else {
+    const p = Math.min(1, x / det);
+    G.gDet.style.opacity = p.toFixed(3);
+    G.gDet.style.transform = `translateX(${aDet ? x - det : 0}px) scale(${(.55 + .45 * p).toFixed(3)})`;
+    G.gDel.style.opacity = 0;
+  }
+}
+function endSwipe(cancelled) {
+  const { del, det } = thresholds();
+  const x = G.lastX, row = G.row, fg = G.fg, gDel = G.gDel, gDet = G.gDet;
+  const id = row.dataset.id;
+  if (!cancelled && (x < -del || (G.vx < -0.8 && x < -48))) {
+    haptic(10);
+    deleteItem(id, true);
+    return;
+  }
+  const toggle = !cancelled && (x > det || (G.vx > 0.8 && x > 48));
+  const dur = D(460);
+  fg.style.transition = `transform ${dur}ms var(--snap)`;
+  fg.style.transform = 'translate3d(0,0,0)';
+  [gDel, gDet].forEach(g => {
+    g.style.transition = `transform ${dur}ms var(--snap), opacity ${D(260)}ms`;
+    g.style.transform = 'translateX(0) scale(.55)';
+    g.style.opacity = 0;
+  });
+  setTimeout(() => {
+    row.classList.remove('armed-del', 'armed-det');
+    fg.style.transition = ''; fg.style.transform = '';
+    [gDel, gDet].forEach(g => { g.style.transition = ''; });
+  }, dur);
+  if (toggle) setExpanded(row.classList.contains('expanded') ? null : id);
+}
+
+/* ---- long-press reorder ---- */
+function startDrag() {
+  if (!G.active || G.mode || !G.row) return;
+  if (expandedId) { collapseDetails(expandedId, true); expandedId = null; }
+  G.mode = 'drag';
+  const rows = liveRows();
+  const from = rows.indexOf(G.row);
+  if (from < 0) { G.mode = 'none'; return; }
+  G.drag = {
+    rows, from, to: from,
+    tops: rows.map(r => r.offsetTop), hs: rows.map(r => r.offsetHeight),
+    st0: scroller.scrollTop, y0: G.y
+  };
+  rows.forEach(r => { if (r !== G.row) r.classList.add('shifting'); });
+  G.row.classList.add('lifted', 'up');
+  app.classList.add('dragging');
+  haptic(12);
+  dragLoop();
+}
+function dragUpdate() {
+  const d = G.drag;
+  const n = d.rows.length;
+  const off = (G.y - d.y0) + (scroller.scrollTop - d.st0);
+  const minOff = -d.tops[d.from];
+  const maxOff = d.tops[n - 1] + d.hs[n - 1] - d.tops[d.from] - d.hs[d.from];
+  const o = Math.max(minOff - 24, Math.min(maxOff + 24, off));
+  G.row.style.transform = `translate3d(0,${o}px,0)`;
+  const center = d.tops[d.from] + o + d.hs[d.from] / 2;
+  let to = 0;
+  for (let i = 0; i < n; i++) if (i !== d.from && center > d.tops[i] + d.hs[i] / 2) to++;
+  if (to !== d.to) {
+    d.to = to;
+    haptic(4);
+    const h = d.hs[d.from];
+    d.rows.forEach((r, i) => {
+      if (i === d.from) return;
+      let s = 0;
+      if (d.from < to && i > d.from && i <= to) s = -h;
+      else if (to < d.from && i >= to && i < d.from) s = h;
+      r.style.transform = s ? `translate3d(0,${s}px,0)` : '';
+    });
+    const order = d.rows.filter((_, i) => i !== d.from);
+    order.splice(to, 0, G.row);
+    recolor(order);
+  }
+}
+function dragLoop() {
+  if (G.mode !== 'drag' || !G.drag) return;
+  const r = scroller.getBoundingClientRect(), edge = 80;
+  let v = 0;
+  if (G.y < r.top + edge) v = -Math.pow(Math.min(1, (r.top + edge - G.y) / edge), 2) * 16;
+  else if (G.y > r.bottom - edge) v = Math.pow(Math.min(1, (G.y - (r.bottom - edge)) / edge), 2) * 16;
+  if (v) scroller.scrollTop += v;
+  dragUpdate();
+  G.raf = requestAnimationFrame(dragLoop);
+}
+function endDrag() {
+  const d = G.drag, row = G.row;
+  cancelAnimationFrame(G.raf);
+  if (!d) return;
+  let final = 0;
+  if (d.to > d.from) for (let i = d.from + 1; i <= d.to; i++) final += d.hs[i];
+  else for (let i = d.to; i < d.from; i++) final -= d.hs[i];
+  const dur = D(320);
+  row.style.transition = `transform ${dur}ms var(--out)`;
+  row.style.transform = `translate3d(0,${final}px,0)`;
+  row.classList.remove('up');
+  G.drag = null;
+  setTimeout(() => {
+    const id = row.dataset.id;
+    const idx = items.findIndex(i => i.id === id);
+    if (idx > -1 && d.to !== d.from) {
+      const [m] = items.splice(idx, 1);
+      items.splice(d.to, 0, m);
+      save();
+    }
+    d.rows.forEach(r => { r.style.transition = 'none'; r.style.transform = ''; r.classList.remove('shifting'); });
+    row.classList.remove('lifted');
+    render();
+    list.offsetHeight;
+    d.rows.forEach(r => { r.style.transition = ''; });
+    app.classList.remove('dragging');
+  }, dur + 10);
+}
+
+/* ================= misc platform polish ================= */
+app.addEventListener('contextmenu', e => { if (!e.target.closest('input,textarea')) e.preventDefault(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && viewer.classList.contains('open')) closeViewer();
+});
+document.addEventListener('gesturestart', e => e.preventDefault());
+if (window.visualViewport) {
+  const vv = window.visualViewport;
+  const onVV = () => {
+    if (innerWidth <= 500) phone.style.setProperty('--vvh', vv.height + 'px');
+    else phone.style.removeProperty('--vvh');
+    if (editing) ensureVisible(editing.row, ROW);
+  };
+  vv.addEventListener('resize', onVV);
+}
+const onScheme = () => { recolor(); if (pullD) paint(pull, 0, items.length + 1); };
+lightMQ.addEventListener ? lightMQ.addEventListener('change', onScheme) : lightMQ.addListener(onScheme);
+window.addEventListener('storage', e => { if (e.key === KEY && !editing && !G.active) { load(); render(); } });
+
+load();
+render();
+})();
+</script>
+</body>
+</html>

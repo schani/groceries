@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Groceries">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Groceries</title>
+<style>
+:root{
+  --accent:#1E9E55;
+  --accent-press:#178446;
+  --bg:#F2F2F7;
+  --card:#FFFFFF;
+  --label:#000000;
+  --label2:rgba(60,60,67,.6);
+  --label3:rgba(60,60,67,.3);
+  --placeholder:rgba(60,60,67,.42);
+  --sep:rgba(60,60,67,.29);
+  --fill:rgba(118,118,128,.12);
+  --fill-strong:rgba(118,118,128,.2);
+  --red:#FF3B30;
+  --red-tint:rgba(255,59,48,.1);
+  --glass:rgba(255,255,255,.62);
+  --glass-hi:rgba(255,255,255,.95);
+  --glass-edge:rgba(0,0,0,.07);
+  --glass-shadow:0 10px 30px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.06);
+  --card-shadow:0 .5px 0 rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.04);
+  --lift-shadow:0 18px 40px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.08);
+  --hair:1px;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+  --kb:0px;
+  --spring:cubic-bezier(.34,1.36,.64,1);
+  --spring-soft:cubic-bezier(.3,1.18,.5,1);
+  --ease:cubic-bezier(.32,.72,0,1);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+}
+@media (min-resolution:2dppx){:root{--hair:.5px}}
+@media (prefers-color-scheme:dark){
+  :root{
+    --accent:#34D07A;
+    --accent-press:#2AB868;
+    --bg:#000000;
+    --card:#1C1C1E;
+    --label:#FFFFFF;
+    --label2:rgba(235,235,245,.6);
+    --label3:rgba(235,235,245,.3);
+    --placeholder:rgba(235,235,245,.4);
+    --sep:rgba(84,84,88,.65);
+    --fill:rgba(118,118,128,.24);
+    --fill-strong:rgba(118,118,128,.32);
+    --red:#FF453A;
+    --red-tint:rgba(255,69,58,.16);
+    --glass:rgba(38,38,42,.58);
+    --glass-hi:rgba(255,255,255,.16);
+    --glass-edge:rgba(255,255,255,.07);
+    --glass-shadow:0 10px 30px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.3);
+    --card-shadow:none;
+    --lift-shadow:0 18px 40px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.4);
+  }
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg)}
+body{
+  font-family:var(--font);color:var(--label);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  overscroll-behavior:none;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+button:focus{outline:none}
+button:focus-visible,.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,textarea{font-family:var(--font);-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img{-webkit-user-drag:none;user-select:none}
+svg{display:block}
+
+/* ---------- Device / frame ---------- */
+.device{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
+.app{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
+.island,.statusbar,.homebar{display:none}
+
+@media (min-width:501px){
+  html,body{background:#E4E4E9}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(120% 90% at 50% 0%,#F4F4F7 0%,#DCDCE2 100%);
+  }
+  .device{
+    position:relative;inset:auto;width:390px;height:844px;flex:none;
+    border-radius:55px;
+    transform:scale(var(--frame-scale,1));
+    box-shadow:
+      0 0 0 10px #101012,
+      0 0 0 11.5px #3A3A3E,
+      0 0 0 12px #1A1A1C,
+      0 50px 90px -20px rgba(0,0,0,.35),
+      0 30px 60px -30px rgba(0,0,0,.3);
+    isolation:isolate;
+  }
+  .app{--sat:54px;--sab:34px;--sal:0px;--sar:0px;border-radius:55px}
+  .island{display:block;position:absolute;top:11px;left:50%;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#000;z-index:60;pointer-events:none}
+  .statusbar{
+    display:flex;position:absolute;top:0;left:0;right:0;height:54px;z-index:59;pointer-events:none;
+    align-items:center;justify-content:space-between;padding:4px 30px 0 52px;color:var(--label);
+  }
+  .statusbar .time{font-size:17px;font-weight:600;letter-spacing:-.4px}
+  .statusbar .icons{display:flex;gap:6px;align-items:center}
+  .homebar{display:block;position:absolute;bottom:8px;left:50%;width:136px;height:5px;margin-left:-68px;border-radius:3px;background:var(--label);z-index:60;pointer-events:none}
+}
+@media (min-width:501px) and (prefers-color-scheme:dark){
+  html,body{background:#0E0E10}
+  body{background:radial-gradient(120% 90% at 50% 0%,#232327 0%,#0B0B0D 100%)}
+  .device{box-shadow:0 0 0 10px #000,0 0 0 11.5px #3A3A3E,0 0 0 12px #1A1A1C,0 50px 90px -20px rgba(0,0,0,.7)}
+}
+
+/* ---------- Scroll area ---------- */
+.scroller{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+  scrollbar-width:none;
+}
+.scroller::-webkit-scrollbar{display:none}
+.content{
+  min-height:100%;display:flex;flex-direction:column;
+  padding:calc(var(--sat) + 10px) calc(12px + var(--sar)) var(--pad-bottom,120px) calc(12px + var(--sal));
+}
+.spacer{flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding-bottom:40px}
+
+.empty{
+  text-align:center;padding:0 32px 36px;color:var(--label2);
+  animation:fadeUp .5s var(--ease) both;
+}
+.empty[hidden]{display:none}
+.empty .ico{width:56px;height:56px;margin:0 auto 12px;color:var(--label3)}
+.empty h2{margin:0;font-size:20px;line-height:25px;font-weight:600;color:var(--label);letter-spacing:.38px}
+.empty p{margin:4px 0 0;font-size:15px;line-height:20px;letter-spacing:-.24px}
+
+.topfade{
+  position:absolute;top:0;left:0;right:0;height:calc(var(--sat) + 14px);z-index:30;pointer-events:none;
+  background:linear-gradient(to bottom,var(--bg) 0%,var(--bg) 62%,transparent 100%);
+}
+.botfade{
+  position:absolute;left:0;right:0;bottom:0;height:calc(var(--sab) + 72px + var(--kb));z-index:15;pointer-events:none;
+  background:linear-gradient(to bottom,transparent 0%,var(--bg) 85%);opacity:.7;
+}
+
+/* ---------- Cards ---------- */
+.list{list-style:none;margin:0;padding:0;position:relative}
+.card{position:relative;padding-bottom:8px;will-change:auto}
+.card-box{
+  position:relative;border-radius:18px;overflow:hidden;background:var(--card);
+  box-shadow:var(--card-shadow);
+  transition:transform .28s var(--spring),box-shadow .28s var(--ease);
+  transform:translateZ(0);
+}
+.swipe-bg{
+  position:absolute;inset:0;background:var(--red);color:#fff;opacity:0;
+  display:flex;align-items:center;justify-content:flex-end;padding-right:24px;
+}
+.swipe-bg svg{transition:transform .25s var(--spring)}
+.card.swiping .swipe-bg{opacity:1}
+.card.armed .swipe-bg svg{transform:scale(1.25)}
+.card-inner{position:relative;background:var(--card);border-radius:18px;will-change:transform}
+.card-inner.springback{transition:transform .45s var(--spring)}
+.card-inner.flyout{transition:transform .28s cubic-bezier(.4,0,1,1)}
+
+.row{
+  display:flex;align-items:center;min-height:60px;padding-left:4px;
+  touch-action:pan-y;cursor:pointer;outline:none;
+}
+/* leading round checkbox: 24px circle, 50x60 hit area */
+.check{
+  position:relative;width:50px;height:60px;flex:none;align-self:flex-start;
+  display:flex;align-items:center;justify-content:center;touch-action:manipulation;
+}
+.ring{
+  position:relative;width:24px;height:24px;border-radius:50%;
+  box-shadow:inset 0 0 0 1.6px var(--label3);
+  transition:box-shadow .2s var(--ease),background-color .2s var(--ease);
+}
+.ring svg{position:absolute;inset:0;color:#fff}
+.ring path{stroke-dasharray:16;stroke-dashoffset:16;transition:stroke-dashoffset .26s var(--ease) .04s}
+.card.checked .ring{background:var(--accent);box-shadow:inset 0 0 0 1.6px var(--accent)}
+.card.checked .ring path{stroke-dashoffset:0}
+.check:active .ring{transform:scale(.86)}
+.check.pop .ring{animation:pop .42s var(--spring)}
+@keyframes pop{0%{transform:scale(.72)}55%{transform:scale(1.14)}100%{transform:scale(1)}}
+.thumb{
+  width:40px;height:40px;border-radius:10px;overflow:hidden;flex:none;margin-left:10px;background:var(--fill);
+  transition:width .42s var(--ease),margin .42s var(--ease),opacity .25s var(--ease);
+}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.card:not(.has-photo) .thumb{display:none}
+.card.open .thumb{width:0;margin-left:0;opacity:0}
+.text{flex:1 1 auto;min-width:0;padding:9px 0}
+.name{font-size:17px;line-height:22px;font-weight:500;letter-spacing:-.41px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-decoration:line-through transparent;text-decoration-thickness:1.5px;transition:color .25s var(--ease),text-decoration-color .25s var(--ease)}
+.card.open .name{display:none}
+/* the header name itself becomes the editable field when expanded */
+.name-edit{
+  display:block;width:calc(100% + 8px);height:36px;margin:0 0 0 -8px;padding:0 8px;border:0;border-radius:10px;
+  background:var(--fill);color:var(--label);outline:none;caret-color:var(--accent);
+  font-size:17px;font-weight:600;letter-spacing:-.41px;-webkit-appearance:none;appearance:none;
+  animation:fieldIn .3s var(--ease) both;
+}
+.name-edit::placeholder{color:var(--placeholder)}
+@keyframes fieldIn{from{background:transparent}to{background:var(--fill)}}
+/* checked: done, quieter */
+.card.checked .name{color:var(--label2);text-decoration-color:var(--label2)}
+.card.checked .desc{color:var(--label3)}
+.card.checked .card-box{box-shadow:none}
+.card.checked .card-inner{background:color-mix(in srgb,var(--card) 58%,var(--bg))}
+.card.checked .thumb{opacity:.5}
+.card.checked .grip{color:var(--label3)}
+.card.open.checked .card-inner{background:var(--card)}
+.sec-label{
+  margin:14px 8px 8px;font-size:15px;line-height:20px;font-weight:600;letter-spacing:-.24px;color:var(--label2);
+}
+.sec-label[hidden]{display:none}
+.sec-label.appear{animation:fadeUp .4s var(--ease) both}
+.sec-label.flip{transition:transform .5s var(--spring-soft)}
+.desc{
+  font-size:14px;line-height:18px;max-height:18px;color:var(--label2);letter-spacing:-.15px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;
+  transition:opacity .2s var(--ease),max-height .42s var(--ease),margin .42s var(--ease);
+}
+.card:not(.has-desc) .desc{display:none}
+.card.open .desc{opacity:0;max-height:0;margin-top:0}
+.card.open .name{font-weight:600}
+
+.handle{position:relative;width:52px;height:60px;flex:none;align-self:flex-start}
+.grip,.chev{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .2s var(--ease),transform .4s var(--spring)}
+.grip{color:var(--label3);touch-action:none;cursor:grab}
+.grip:active{cursor:grabbing}
+.chev{color:var(--label2);opacity:0;transform:rotate(-90deg) scale(.6);pointer-events:none}
+.card.open .grip{opacity:0;pointer-events:none;transform:scale(.6)}
+.card.open .chev{opacity:1;transform:rotate(0) scale(1)}
+
+.card.pressed .card-box{transform:scale(.975)}
+.card.dragging{z-index:40}
+.card.dragging .card-box{transform:scale(1.035);box-shadow:var(--lift-shadow)}
+.card.dragging .grip{color:var(--accent)}
+.card.shift{transition:transform .42s var(--spring-soft)}
+.card.settling{transition:transform .32s var(--ease)}
+.card.flip{transition:transform .5s var(--spring-soft);z-index:2}
+.card.flip.travel{z-index:3}
+.card.removing{transition:height .38s var(--ease),padding .38s var(--ease),opacity .28s var(--ease);overflow:hidden}
+.card.removing .card-box{transition:transform .38s var(--ease)}
+.card.removing.fade .card-box{transform:scale(.92);opacity:0;transition:transform .32s var(--ease),opacity .25s var(--ease)}
+.card.enter .card-box{animation:springIn .62s var(--spring) both}
+.no-anim,.no-anim *{transition:none !important}
+
+@keyframes springIn{
+  0%{opacity:0;transform:translateY(26px) scale(.9)}
+  45%{opacity:1}
+  100%{opacity:1;transform:none}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- Expanded body ---------- */
+.body{height:0;overflow:hidden;transition:height .46s var(--ease)}
+.body-inner{padding:0 12px 12px;opacity:0;transform:translateY(-6px);transition:opacity .3s var(--ease) .05s,transform .46s var(--ease)}
+.card.open .body-inner{opacity:1;transform:none}
+.fields{background:var(--fill);border-radius:12px;overflow:hidden}
+.f-desc{
+  display:block;width:100%;border:0;margin:0;background:transparent;color:var(--label);
+  outline:none;caret-color:var(--accent);-webkit-appearance:none;appearance:none;border-radius:0;
+}
+.f-desc{padding:12px 14px 13px;font-size:16px;line-height:21px;letter-spacing:-.3px;resize:none;min-height:46px;overflow:hidden}
+.f-desc::placeholder{color:var(--placeholder)}
+
+.photo{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:var(--fill)}
+.photo img{display:block;width:100%;height:220px;object-fit:cover;pointer-events:none}
+.photo-actions{position:absolute;right:8px;bottom:8px;display:flex;gap:8px}
+.pill{
+  position:relative;height:36px;min-width:36px;padding:0 13px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:15px;font-weight:600;letter-spacing:-.24px;color:#fff;
+  background:rgba(30,30,32,.42);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.3),inset 0 0 0 .5px rgba(255,255,255,.12);
+}
+.pill.icon{padding:0;width:36px}
+.pill::before,.send::before,.chip-x::before{content:"";position:absolute;inset:-5px}
+.add-photo,.remove-btn{
+  width:100%;height:46px;margin-top:10px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:7px;
+  font-size:17px;letter-spacing:-.41px;transition:background-color .15s,transform .2s var(--spring);
+}
+.add-photo{background:var(--fill);color:var(--accent);font-weight:500}
+.remove-btn{background:var(--red-tint);color:var(--red);font-weight:600}
+.add-photo:active,.remove-btn:active,.pill:active{transform:scale(.97)}
+.add-photo:active{background:var(--fill-strong)}
+
+/* ---------- Composer ---------- */
+.composer{
+  position:absolute;left:0;right:0;z-index:50;
+  bottom:max(calc(var(--sab) - 8px),12px);
+  display:flex;align-items:flex-end;gap:8px;
+  padding:0 calc(12px + var(--sar)) 0 calc(12px + var(--sal));
+  transition:bottom .3s var(--ease),transform .42s var(--ease),opacity .25s var(--ease);
+}
+.app.kb-open .composer{bottom:calc(var(--kb) + 8px)}
+.app.editing .composer{transform:translateY(140%);opacity:0;pointer-events:none}
+.glass{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);
+  box-shadow:inset 0 .5px 0 var(--glass-hi),inset 0 0 0 .5px var(--glass-edge),var(--glass-shadow);
+}
+.cam{
+  width:48px;height:48px;border-radius:24px;flex:none;display:flex;align-items:center;justify-content:center;
+  color:var(--label);transition:transform .3s var(--spring);
+}
+.cam:active{transform:scale(.9)}
+.capsule{
+  flex:1 1 auto;min-width:0;height:48px;border-radius:24px;display:flex;align-items:center;
+  padding:0 6px 0 18px;transition:padding .3s var(--ease);
+}
+.composer.has-photo .capsule{padding-left:7px}
+.chip{
+  position:relative;flex:none;width:34px;height:34px;border-radius:17px;margin-right:10px;
+  animation:chipIn .45s var(--spring) both;
+}
+.chip[hidden]{display:none}
+.chip img{width:100%;height:100%;object-fit:cover;border-radius:17px;display:block;pointer-events:none;box-shadow:0 0 0 .5px rgba(0,0,0,.1)}
+.chip-x{
+  position:absolute;top:-5px;right:-6px;width:19px;height:19px;border-radius:50%;
+  background:var(--label);color:var(--card);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--card);
+}
+@keyframes chipIn{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.add-input{
+  flex:1 1 auto;min-width:0;height:46px;border:0;background:transparent;outline:none;padding:0;
+  font-size:17px;letter-spacing:-.41px;color:var(--label);caret-color:var(--accent);
+}
+.add-input::placeholder{color:var(--placeholder)}
+.send{
+  position:relative;flex:none;width:36px;height:36px;border-radius:18px;margin-left:6px;
+  background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;
+  transform:scale(.2);opacity:0;pointer-events:none;
+  transition:transform .4s var(--spring),opacity .18s var(--ease),background-color .15s;
+  box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 40%,transparent);
+}
+.composer.has-text .send{transform:none;opacity:1;pointer-events:auto}
+.send:active{background:var(--accent-press);transform:scale(.88)}
+
+.file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important;transition-delay:0s !important;scroll-behavior:auto !important}
+}
+</style>
+</head>
+<body>
+<div class="device" id="device">
+  <div class="island" aria-hidden="true"></div>
+  <div class="statusbar" aria-hidden="true">
+    <span class="time">9:41</span>
+    <span class="icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.6c2.2 0 4.2.85 5.7 2.25l1.1-1.1A9.6 9.6 0 0 0 8 1 9.6 9.6 0 0 0 1.2 3.75l1.1 1.1A8.1 8.1 0 0 1 8 2.6Zm0 3.2c1.3 0 2.5.5 3.4 1.3l1.1-1.1A6.4 6.4 0 0 0 8 4.2c-1.7 0-3.3.65-4.5 1.8l1.1 1.1c.9-.8 2.1-1.3 3.4-1.3Zm0 3.2c-.45 0-.86.17-1.17.45L8 10.6l1.17-1.15A1.7 1.7 0 0 0 8 9Z"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.8" stroke="currentColor" opacity=".35"/><rect x="2" y="2" width="20" height="9" rx="2.5" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2Z" fill="currentColor" opacity=".4"/></svg>
+    </span>
+  </div>
+  <div class="homebar" aria-hidden="true"></div>
+
+  <div class="app" id="app">
+    <div class="scroller" id="scroller">
+      <div class="content" id="content">
+        <ul class="list" id="listTodo" aria-label="To buy"></ul>
+        <h2 class="sec-label" id="secLabel" hidden>Checked</h2>
+        <ul class="list" id="listDone" aria-label="Checked"></ul>
+        <div class="spacer" id="spacer">
+          <div class="empty" id="empty" hidden>
+            <svg class="ico" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20h40l-4.2 22.4A4 4 0 0 1 39.9 46H16.1a4 4 0 0 1-3.9-3.6L8 20Z"/><path d="M19 20 26 9M37 20 30 9M22 29v8M28 29v8M34 29v8"/></svg>
+            <h2>All done</h2>
+            <p>Add what you need below.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="topfade" aria-hidden="true"></div>
+    <div class="botfade" aria-hidden="true"></div>
+
+    <div class="composer" id="composer">
+      <button class="cam glass" id="cam" aria-label="Attach photo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4.5 7.5h3l1.6-2.2c.2-.3.5-.4.8-.4h4.2c.3 0 .6.1.8.4l1.6 2.2h3A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V9a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.2" r="3.4"/></svg>
+      </button>
+      <div class="capsule glass">
+        <div class="chip" id="chip" hidden>
+          <img id="chipImg" alt="Attached photo">
+          <button class="chip-x" id="chipX" aria-label="Remove attached photo">
+            <svg width="9" height="9" viewBox="0 0 10 10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2 2l6 6M8 2 2 8"/></svg>
+          </button>
+        </div>
+        <label class="sr" for="addInput">Add item</label>
+        <input class="add-input" id="addInput" type="text" placeholder="Add item" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" maxlength="80">
+        <button class="send" id="send" aria-label="Add item" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13.5V2.8M3.2 7.4 8 2.6l4.8 4.8"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<input class="file" id="file" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+
+<script>
+(() => {
+'use strict';
+const KEY = 'groceries-t1';
+const $ = (s, r = document) => r.querySelector(s);
+const app = $('#app'), device = $('#device'), scroller = $('#scroller'), content = $('#content'),
+      lists = $('#content'), listTodo = $('#listTodo'), listDone = $('#listDone'), secLabel = $('#secLabel'), emptyEl = $('#empty'),
+      composer = $('#composer'), input = $('#addInput'), sendBtn = $('#send'), camBtn = $('#cam'),
+      chip = $('#chip'), chipImg = $('#chipImg'), chipX = $('#chipX'), fileInput = $('#file');
+const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const framedMQ = matchMedia('(min-width: 501px)');
+const dur = ms => reduceMQ.matches ? 0 : ms;
+const haptic = () => { try { navigator.vibrate && navigator.vibrate(8); } catch (_) {} };
+
+const ICON = {
+  trash: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.8c0-.7.5-1.3 1.2-1.3h2.6c.7 0 1.2.6 1.2 1.3v1.7M6.2 6.5l.9 12.6c.1 1 .9 1.9 2 1.9h5.8c1 0 1.9-.8 2-1.9l.9-12.6M10.2 10.5v6.5M13.8 10.5v6.5"/></svg>',
+  grip: '<svg width="20" height="14" viewBox="0 0 20 14" fill="currentColor"><rect y="0" width="20" height="2.2" rx="1.1"/><rect y="5.9" width="20" height="2.2" rx="1.1"/><rect y="11.8" width="20" height="2.2" rx="1.1"/></svg>',
+  chev: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10 8 5.5l4.5 4.5"/></svg>',
+  camera: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4.5 7.5h3l1.6-2.2c.2-.3.5-.4.8-.4h4.2c.3 0 .6.1.8.4l1.6 2.2h3A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V9a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.2" r="3.4"/></svg>',
+  check: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 12.4l3.1 3.1 6.1-6.6"/></svg>',
+  x: '<svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>'
+};
+
+/* ---------------- Seed photos (drawn locally) ---------------- */
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function eggPath(x, w, h) {
+  x.beginPath();
+  x.moveTo(0, -h);
+  x.bezierCurveTo(w * .62, -h, w, -h * .1, w, h * .38);
+  x.bezierCurveTo(w, h * .82, w * .58, h, 0, h);
+  x.bezierCurveTo(-w * .58, h, -w, h * .82, -w, h * .38);
+  x.bezierCurveTo(-w, -h * .1, -w * .62, -h, 0, -h);
+  x.closePath();
+}
+function drawAvocados() {
+  const c = canvas(640, 640), x = c.getContext('2d');
+  let g = x.createLinearGradient(0, 0, 640, 640);
+  g.addColorStop(0, '#F3EBDA'); g.addColorStop(1, '#DCCBA6');
+  x.fillStyle = g; x.fillRect(0, 0, 640, 640);
+  // board
+  x.save(); x.shadowColor = 'rgba(80,55,20,.28)'; x.shadowBlur = 40; x.shadowOffsetY = 18;
+  g = x.createLinearGradient(0, 120, 0, 560); g.addColorStop(0, '#C99A62'); g.addColorStop(1, '#A87842');
+  x.fillStyle = g; x.beginPath(); x.ellipse(320, 340, 290, 250, -.12, 0, Math.PI * 2); x.fill(); x.restore();
+  x.strokeStyle = 'rgba(90,55,20,.12)'; x.lineWidth = 2;
+  for (let i = 0; i < 9; i++) { x.beginPath(); x.ellipse(320, 340, 260 - i * 26, 220 - i * 22, -.12, 0, Math.PI * 2); x.stroke(); }
+  const half = (cx, cy, rot, s) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot); x.scale(s, s);
+    x.save(); x.shadowColor = 'rgba(50,30,10,.4)'; x.shadowBlur = 26; x.shadowOffsetY = 12;
+    eggPath(x, 120, 158); x.fillStyle = '#2C4A1B'; x.fill(); x.restore();
+    x.save(); x.scale(.88, .9); eggPath(x, 120, 158);
+    g = x.createRadialGradient(0, 40, 10, 0, 30, 170);
+    g.addColorStop(0, '#F4F2A8'); g.addColorStop(.55, '#D6E27C'); g.addColorStop(.85, '#A9C751'); g.addColorStop(1, '#6E9A2E');
+    x.fillStyle = g; x.fill(); x.restore();
+    g = x.createRadialGradient(-14, 30, 4, 0, 46, 58);
+    g.addColorStop(0, '#C98A55'); g.addColorStop(.6, '#8E5329'); g.addColorStop(1, '#5E3416');
+    x.fillStyle = g; x.beginPath(); x.arc(0, 46, 54, 0, Math.PI * 2); x.fill();
+    x.fillStyle = 'rgba(255,255,255,.32)'; x.beginPath(); x.ellipse(-18, 26, 16, 9, -.6, 0, Math.PI * 2); x.fill();
+    x.restore();
+  };
+  half(225, 330, -.35, 1);
+  half(430, 360, .4, .95);
+  return c.toDataURL('image/jpeg', .82);
+}
+function lemonPath(x, r) {
+  x.beginPath();
+  x.moveTo(-r * 1.16, 0);
+  x.bezierCurveTo(-r * 1.0, -r * .22, -r * .82, -r * .76, 0, -r * .76);
+  x.bezierCurveTo(r * .82, -r * .76, r * 1.0, -r * .22, r * 1.16, 0);
+  x.bezierCurveTo(r * 1.0, r * .22, r * .82, r * .76, 0, r * .76);
+  x.bezierCurveTo(-r * .82, r * .76, -r * 1.0, r * .22, -r * 1.16, 0);
+  x.closePath();
+}
+function drawLemons() {
+  const c = canvas(640, 640), x = c.getContext('2d');
+  let g = x.createLinearGradient(0, 0, 0, 640);
+  g.addColorStop(0, '#DCEBF7'); g.addColorStop(1, '#AFCDE6');
+  x.fillStyle = g; x.fillRect(0, 0, 640, 640);
+  const leaf = (cx, cy, rot) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot);
+    g = x.createLinearGradient(-60, 0, 60, 0); g.addColorStop(0, '#2F7D32'); g.addColorStop(1, '#5DB14E');
+    x.fillStyle = g; x.beginPath(); x.moveTo(-70, 0); x.quadraticCurveTo(0, -42, 70, 0); x.quadraticCurveTo(0, 42, -70, 0); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 2; x.beginPath(); x.moveTo(-62, 0); x.lineTo(62, 0); x.stroke();
+    x.restore();
+  };
+  const lemon = (cx, cy, rot, r) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot);
+    x.save(); x.shadowColor = 'rgba(30,60,100,.35)'; x.shadowBlur = 30; x.shadowOffsetY = 16;
+    lemonPath(x, r); x.fillStyle = '#F2C514'; x.fill(); x.restore();
+    lemonPath(x, r);
+    g = x.createRadialGradient(-r * .35, -r * .35, r * .05, 0, 0, r * 1.2);
+    g.addColorStop(0, '#FFF59A'); g.addColorStop(.45, '#FFDF2E'); g.addColorStop(1, '#E2A400');
+    x.fillStyle = g; x.fill();
+    x.fillStyle = 'rgba(255,255,255,.45)'; x.beginPath(); x.ellipse(-r * .35, -r * .38, r * .28, r * .1, -.25, 0, Math.PI * 2); x.fill();
+    x.restore();
+  };
+  const slice = (cx, cy, r) => {
+    x.save(); x.translate(cx, cy);
+    x.shadowColor = 'rgba(30,60,100,.3)'; x.shadowBlur = 24; x.shadowOffsetY = 12;
+    x.fillStyle = '#F4C318'; x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2); x.fill();
+    x.shadowColor = 'transparent';
+    x.fillStyle = '#FFF8D6'; x.beginPath(); x.arc(0, 0, r * .9, 0, Math.PI * 2); x.fill();
+    for (let i = 0; i < 9; i++) {
+      const a0 = i / 9 * Math.PI * 2 + .05, a1 = (i + 1) / 9 * Math.PI * 2 - .05;
+      g = x.createRadialGradient(0, 0, 4, 0, 0, r * .82);
+      g.addColorStop(0, '#FFF2A0'); g.addColorStop(1, '#FFD83A');
+      x.fillStyle = g; x.beginPath(); x.moveTo(Math.cos((a0 + a1) / 2) * 8, Math.sin((a0 + a1) / 2) * 8);
+      x.arc(0, 0, r * .8, a0, a1); x.closePath(); x.fill();
+    }
+    x.restore();
+  };
+  leaf(470, 170, -.6);
+  lemon(250, 230, -.3, 130);
+  lemon(430, 400, .25, 125);
+  slice(200, 470, 105);
+  return c.toDataURL('image/jpeg', .82);
+}
+
+/* ---------------- State ---------------- */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function seed() {
+  const items = [
+    { name: 'Avocados', desc: 'Two ripe, two for later in the week', photo: drawAvocados(), checked: false },
+    { name: 'Sourdough loaf', desc: '', photo: null, checked: true },
+    { name: 'Oat milk', desc: 'Barista edition — the blue carton', photo: null, checked: false },
+    { name: 'Lemons', desc: '', photo: drawLemons(), checked: false },
+    { name: 'Greek yogurt', desc: '', photo: null, checked: true },
+    { name: 'Fresh basil', desc: 'A potted one if they have it', photo: null, checked: false },
+    { name: 'Eggs', desc: '', photo: null, checked: false },
+    { name: 'Parmesan', desc: '', photo: null, checked: true },
+    { name: 'Cherry tomatoes', desc: '', photo: null, checked: false }
+  ].map(i => ({ id: uid() + Math.random().toString(36).slice(2, 4), ...i }));
+  return { v: 2, items };
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && Array.isArray(s.items)) { s.items.forEach(i => { i.checked = !!i.checked; }); return s; }
+  } catch (_) {}
+  const s = seed();
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (_) {}
+  return s;
+}
+let state = load();
+let saveTimer = 0;
+function save(now) {
+  clearTimeout(saveTimer);
+  const write = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn('Could not save list', e); } };
+  if (now) write(); else saveTimer = setTimeout(write, 250);
+}
+const findItem = id => state.items.find(i => i.id === id);
+const cardById = id => id ? lists.querySelector(`.card[data-id="${CSS.escape(id)}"]`) : null;
+
+/* ---------------- Rendering ---------------- */
+let openId = null;
+function cardEl(it) {
+  const li = document.createElement('li');
+  li.className = 'card';
+  li.dataset.id = it.id;
+  li.innerHTML =
+    `<div class="card-box"><div class="swipe-bg" aria-hidden="true">${ICON.trash}</div>
+      <div class="card-inner">
+        <div class="row" role="button" tabindex="0" aria-expanded="false">
+          <button class="check" role="checkbox" aria-checked="false"><span class="ring">${ICON.check}</span></button>
+          <div class="text"><div class="name"></div><div class="desc"></div></div>
+          <div class="thumb"></div>
+          <div class="handle">
+            <span class="chev" aria-hidden="true">${ICON.chev}</span>
+            <button class="grip" aria-label="Reorder">${ICON.grip}</button>
+          </div>
+        </div>
+        <div class="body"></div>
+      </div></div>`;
+  fillRow(li, it);
+  return li;
+}
+function fillRow(li, it) {
+  $('.name', li).textContent = it.name;
+  const d = $('.desc', li);
+  d.textContent = it.desc ? it.desc.split('\n').find(l => l.trim()) || '' : '';
+  li.classList.toggle('has-desc', !!(it.desc && it.desc.trim()));
+  const t = $('.thumb', li);
+  const cur = $('img', t);
+  if (it.photo) {
+    if (!cur || cur.src !== it.photo) { t.textContent = ''; const img = new Image(); img.alt = ''; img.decoding = 'async'; img.src = it.photo; t.appendChild(img); }
+  } else t.textContent = '';
+  li.classList.toggle('has-photo', !!it.photo);
+  $('.grip', li).setAttribute('aria-label', `Reorder ${it.name}`);
+  li.classList.toggle('checked', !!it.checked);
+  const ck = $('.check', li);
+  ck.setAttribute('aria-checked', String(!!it.checked));
+  ck.setAttribute('aria-label', it.name);
+}
+const todoItems = () => state.items.filter(i => !i.checked);
+const doneItems = () => state.items.filter(i => i.checked);
+function render() {
+  for (const [ul, items] of [[listTodo, todoItems()], [listDone, doneItems()]]) {
+    ul.textContent = '';
+    const frag = document.createDocumentFragment();
+    for (const it of items) frag.appendChild(cardEl(it));
+    ul.appendChild(frag);
+  }
+  syncLabel(false);
+  updateMeta();
+}
+function updateMeta() {
+  emptyEl.hidden = state.items.length !== 0;
+}
+const liveCards = ul => [...ul.children].filter(c => c.classList.contains('card') && !c.classList.contains('removing'));
+function syncLabel(animate) {
+  const show = liveCards(listDone).length > 0;
+  if (show === !secLabel.hidden) return;
+  secLabel.hidden = !show;
+  if (show && animate && !reduceMQ.matches) {
+    secLabel.classList.remove('appear'); secLabel.getBoundingClientRect(); secLabel.classList.add('appear');
+    setTimeout(() => secLabel.classList.remove('appear'), 450);
+  }
+}
+
+/* ---------------- Check / uncheck, deferred batched reflow ---------------- */
+let reflowTimer = 0, reflowWaitSince = 0;
+const downPointers = new Set();
+document.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') downPointers.clear(); downPointers.add(e.pointerId); }, true);
+const pointerOff = e => downPointers.delete(e.pointerId);
+document.addEventListener('pointerup', pointerOff, true);
+document.addEventListener('pointercancel', pointerOff, true);
+function toggleChecked(li) {
+  const it = findItem(li.dataset.id);
+  if (!it || li.classList.contains('removing')) return;
+  it.checked = !it.checked;
+  save(true);
+  haptic();
+  fillRow(li, it);
+  const ck = $('.check', li);
+  ck.classList.remove('pop'); ck.getBoundingClientRect(); ck.classList.add('pop');
+  setTimeout(() => ck.classList.remove('pop'), 450);
+  scheduleReflow();
+}
+function scheduleReflow() {
+  clearTimeout(reflowTimer);
+  reflowWaitSince = performance.now();
+  reflowTimer = setTimeout(tryReflow, 500); // kept under reduced motion too: it stops cards jumping mid-spree
+}
+function tryReflow() {
+  // never move cards while a finger is down / a gesture is running — wait for the spree to end
+  const busy = drag || gesture || downPointers.size > 0;
+  if (busy && performance.now() - reflowWaitSince < 4000) { reflowTimer = setTimeout(tryReflow, 250); return; }
+  reflow();
+}
+function reflow() {
+  clearTimeout(reflowTimer); reflowTimer = 0;
+  const focused = document.activeElement;
+  const travelling = [];
+  flip(() => {
+    lists.querySelectorAll('.card.removing').forEach(c => c.remove());
+    for (const [ul, items] of [[listTodo, todoItems()], [listDone, doneItems()]]) {
+      items.forEach((it, i) => {
+        const li = cardById(it.id);
+        if (!li) return;
+        if (li.parentNode !== ul) travelling.push(li);
+        if (ul.children[i] !== li) ul.insertBefore(li, ul.children[i] || null);
+      });
+    }
+    syncLabel(true);
+    updateMeta();
+  }, travelling);
+  if (focused && focused !== document.activeElement && focused.isConnected) focused.focus({ preventScroll: true });
+  layoutPad();
+}
+
+/* ---------------- Layout: composer, keyboard, padding ---------------- */
+let kb = 0;
+function topInset() { return framedMQ.matches ? 54 : $('.topfade').offsetHeight - 14; }
+function composerTop() { // y within scroller viewport where composer begins
+  const r = composer.getBoundingClientRect(), s = scroller.getBoundingClientRect();
+  return app.classList.contains('editing') ? s.height - kb : r.top - s.top;
+}
+function layoutPad() {
+  const s = scroller.getBoundingClientRect();
+  const editing = app.classList.contains('editing');
+  let pad;
+  if (editing) pad = kb + 24;
+  else { const r = composer.getBoundingClientRect(); pad = Math.max(0, s.bottom - r.top) + 14; }
+  content.style.setProperty('--pad-bottom', pad + 'px');
+}
+function onViewport() {
+  const vv = window.visualViewport;
+  kb = (!vv || framedMQ.matches) ? 0 : Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+  if (kb < 60) kb = 0;
+  app.style.setProperty('--kb', kb + 'px');
+  app.classList.toggle('kb-open', kb > 0);
+  // wait for composer bottom transition to settle before measuring
+  setTimeout(() => {
+    layoutPad();
+    const a = document.activeElement;
+    if (a && a.closest && a.closest('.card')) ensureVisible(a.closest('.fields') || a, 16);
+  }, dur(320));
+  layoutPad();
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', onViewport);
+  visualViewport.addEventListener('scroll', onViewport);
+}
+window.addEventListener('resize', () => { fitFrame(); onViewport(); });
+function fitFrame() {
+  if (!framedMQ.matches) { device.style.removeProperty('--frame-scale'); return; }
+  const s = Math.min(1, (window.innerHeight - 48) / 868, (window.innerWidth - 48) / 414);
+  device.style.setProperty('--frame-scale', s.toFixed(3));
+}
+// keep a scrolled-into-view rect above the keyboard/composer
+function ensureVisible(el, margin = 12) {
+  const sr = scroller.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const top = r.top - sr.top, bottom = r.bottom - sr.top;
+  const limitBottom = composerTop() - margin, limitTop = topInset() + margin;
+  if (bottom > limitBottom) scroller.scrollTop += Math.min(bottom - limitBottom, top - limitTop);
+  else if (top < limitTop) scroller.scrollTop -= limitTop - top;
+}
+
+/* ---------------- FLIP helper (smooth push when list grows) ---------------- */
+function flip(mutate, travelling = []) {
+  const els = [secLabel, ...lists.querySelectorAll('.card')];
+  const before = new Map();
+  for (const e of els) { const r = e.getBoundingClientRect(); if (r.height) before.set(e, r.top); }
+  mutate();
+  if (reduceMQ.matches) return;
+  for (const [e, t] of before) {
+    if (!e.isConnected) continue;
+    const r = e.getBoundingClientRect();
+    if (!r.height) continue;
+    const d = t - r.top;
+    if (Math.abs(d) < 1) continue;
+    e.classList.remove('flip');
+    e.classList.toggle('travel', travelling.includes(e));
+    e.style.transform = `translate3d(0,${d}px,0)`;
+    e.getBoundingClientRect();
+    e.classList.add('flip');
+    e.style.transform = '';
+    setTimeout(() => e.classList.remove('flip', 'travel'), 520);
+  }
+}
+
+/* ---------------- Composer ---------------- */
+let pendingPhoto = null;
+function updateComposer() {
+  const has = input.value.trim().length > 0;
+  composer.classList.toggle('has-text', has);
+  sendBtn.tabIndex = has ? 0 : -1;
+  input.placeholder = pendingPhoto ? 'Name this item' : 'Add item';
+}
+function setPending(url) {
+  pendingPhoto = url;
+  chip.hidden = !url;
+  composer.classList.toggle('has-photo', !!url);
+  if (url) chipImg.src = url; else chipImg.removeAttribute('src');
+  updateComposer();
+}
+function addItem() {
+  const name = input.value.trim().replace(/\s+/g, ' ');
+  if (!name) return;
+  if (openId) collapse(cardById(openId), true);
+  const it = { id: uid(), name, desc: '', photo: pendingPhoto, checked: false };
+  const li = cardEl(it);
+  li.classList.add('enter');
+  flip(() => {
+    state.items.push(it);
+    listTodo.appendChild(li); // end of the array = end of the unchecked block
+    updateMeta();
+    layoutPad();
+    ensureVisible(li, 14);
+  });
+  save(true);
+  input.value = '';
+  setPending(null);
+  haptic();
+  setTimeout(() => li.classList.remove('enter'), 700);
+}
+input.addEventListener('input', updateComposer);
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addItem(); }
+});
+input.addEventListener('focus', () => { if (openId) collapse(cardById(openId)); });
+// keep keyboard up when tapping send
+sendBtn.addEventListener('pointerdown', e => e.preventDefault());
+sendBtn.addEventListener('click', () => { addItem(); input.focus({ preventScroll: true }); });
+chipX.addEventListener('pointerdown', e => e.preventDefault());
+chipX.addEventListener('click', () => setPending(null));
+camBtn.addEventListener('click', async () => {
+  const url = await pickPhoto();
+  if (url) { setPending(url); input.focus({ preventScroll: true }); }
+});
+
+/* ---------------- Photos ---------------- */
+function pickPhoto() {
+  return new Promise(resolve => {
+    fileInput.value = '';
+    fileInput.onchange = async () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) return resolve(null);
+      try { resolve(await downscale(f)); } catch (e) { console.warn('Could not read image', e); resolve(null); }
+    };
+    fileInput.click();
+  });
+}
+function downscale(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1024 / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * s)), h = Math.max(1, Math.round(img.naturalHeight * s));
+      const c = canvas(w, h), x = c.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', .82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+    img.src = url;
+  });
+}
+
+/* ---------------- Expand / collapse ---------------- */
+function buildBody(li, it) {
+  const body = $('.body', li);
+  body.innerHTML =
+    `<div class="body-inner">
+      <div class="fields">
+        <textarea class="f-desc" rows="1" aria-label="Description" placeholder="Add a description"></textarea>
+      </div>
+      <div class="photo-slot"></div>
+      <button class="remove-btn">${ICON.trash}<span>Remove</span></button>
+    </div>`;
+  const fName = document.createElement('input');
+  Object.assign(fName, { className: 'name-edit', type: 'text', placeholder: 'Name', autocomplete: 'off', maxLength: 80 });
+  fName.setAttribute('aria-label', 'Name');
+  fName.setAttribute('enterkeyhint', 'done');
+  fName.setAttribute('autocapitalize', 'sentences');
+  $('.text', li).querySelector('.name-edit')?.remove();
+  $('.text', li).prepend(fName);
+  const fDesc = $('.f-desc', body);
+  fName.value = it.name;
+  fDesc.value = it.desc || '';
+  fName.addEventListener('input', () => {
+    const v = fName.value.trim().replace(/\s+/g, ' ');
+    if (v) { it.name = v; fillRow(li, it); save(); }
+  });
+  fName.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); fName.blur(); } });
+  fName.addEventListener('blur', () => { if (!fName.value.trim()) fName.value = it.name; });
+  const grow = () => { fDesc.style.height = 'auto'; fDesc.style.height = fDesc.scrollHeight + 'px'; };
+  fDesc.addEventListener('input', () => { it.desc = fDesc.value; fillRow(li, it); save(); grow(); });
+  renderPhotoSlot(li, it);
+  $('.remove-btn', body).addEventListener('click', () => removeCard(li, false));
+  requestAnimationFrame(grow);
+}
+function renderPhotoSlot(li, it) {
+  const slot = $('.photo-slot', li);
+  if (!slot) return;
+  if (it.photo) {
+    slot.innerHTML = `<div class="photo"><img alt="${'Photo of ' + it.name.replace(/"/g, '&quot;')}">
+      <div class="photo-actions">
+        <button class="pill replace">${ICON.camera}<span>Replace</span></button>
+        <button class="pill icon rm-photo" aria-label="Remove photo">${ICON.x}</button>
+      </div></div>`;
+    $('img', slot).src = it.photo;
+    $('.replace', slot).addEventListener('click', () => choosePhoto(li, it));
+    $('.rm-photo', slot).addEventListener('click', () => { it.photo = null; save(true); fillRow(li, it); renderPhotoSlot(li, it); });
+  } else {
+    slot.innerHTML = `<button class="add-photo">${ICON.camera}<span>Add Photo</span></button>`;
+    $('.add-photo', slot).addEventListener('click', () => choosePhoto(li, it));
+  }
+}
+async function choosePhoto(li, it) {
+  const url = await pickPhoto();
+  if (!url) return;
+  it.photo = url; save(true); fillRow(li, it); renderPhotoSlot(li, it);
+  const p = $('.photo', li);
+  if (p) setTimeout(() => ensureVisible(p, 16), 60);
+}
+
+function expand(li) {
+  const id = li.dataset.id, it = findItem(id);
+  if (!it) return;
+  if (openId && openId !== id) collapse(cardById(openId));
+  openId = id;
+  buildBody(li, it);
+  const body = $('.body', li);
+  li.classList.add('open');
+  $('.row', li).setAttribute('aria-expanded', 'true');
+  const h = $('.body-inner', body).offsetHeight;
+  body.style.height = '0px';
+  body.getBoundingClientRect();
+  body.style.height = h + 'px';
+  // follow the growing card so it stays fully visible (only scroll down, never past its top)
+  const t0 = performance.now(), D = dur(480);
+  const follow = () => {
+    if (openId !== id) return;
+    const sr = scroller.getBoundingClientRect(), r = li.getBoundingClientRect();
+    const over = (r.bottom - sr.top) - (composerTop() - 6);
+    const room = (r.top - sr.top) - (topInset() + 8);
+    if (over > 0 && room > 0) scroller.scrollTop += Math.min(over, room);
+    if (performance.now() - t0 < D + 60) requestAnimationFrame(follow);
+  };
+  requestAnimationFrame(follow);
+  setTimeout(() => { if (openId === id) body.style.height = 'auto'; }, D);
+}
+function collapse(li, instant) {
+  if (!li) { openId = null; return; }
+  if (openId === li.dataset.id) openId = null;
+  const body = $('.body', li);
+  const a = document.activeElement;
+  if (a && li.contains(a)) a.blur();
+  li.classList.remove('open');
+  $('.row', li).setAttribute('aria-expanded', 'false');
+  const ne = $('.name-edit', li);
+  if (ne) { const it = findItem(li.dataset.id); ne.remove(); if (it) fillRow(li, it); }
+  if (instant || reduceMQ.matches) {
+    li.classList.add('no-anim');
+    body.style.height = '0px'; body.textContent = '';
+    li.getBoundingClientRect();
+    li.classList.remove('no-anim');
+    return;
+  }
+  body.style.height = body.offsetHeight + 'px';
+  body.getBoundingClientRect();
+  body.style.height = '0px';
+  setTimeout(() => { if (!li.classList.contains('open')) body.textContent = ''; }, dur(480));
+}
+function toggle(li) {
+  if (li.classList.contains('open')) collapse(li); else expand(li);
+}
+
+// editing state: hide composer while a card field has focus
+document.addEventListener('focusin', e => {
+  const inCard = !!(e.target.closest && e.target.closest('.card'));
+  app.classList.toggle('editing', inCard && (e.target.matches('input,textarea')));
+  layoutPad();
+});
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const a = document.activeElement;
+    const still = a && a.closest && a.closest('.card') && a.matches('input,textarea');
+    if (!still) { app.classList.remove('editing'); layoutPad(); }
+  }, 0);
+});
+
+/* ---------------- Removal ---------------- */
+function removeCard(li, swiped) {
+  const id = li.dataset.id;
+  if (openId === id) openId = null;
+  const a = document.activeElement;
+  if (a && li.contains(a)) a.blur();
+  state.items = state.items.filter(i => i.id !== id);
+  save(true);
+  haptic();
+  li.style.height = li.offsetHeight + 'px';
+  li.getBoundingClientRect();
+  li.classList.add('removing');
+  if (!swiped) li.classList.add('fade');
+  li.style.height = '0px';
+  li.style.paddingBottom = '0px';
+  setTimeout(() => { li.remove(); updateMeta(); syncLabel(false); }, dur(swiped ? 380 : 400));
+  setTimeout(updateMeta, dur(160));
+}
+
+/* ---------------- Gestures: tap, swipe-to-delete ---------------- */
+let gesture = null;
+lists.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || drag) return;
+  const grip = e.target.closest('.grip');
+  if (grip) {
+    // a check/uncheck is waiting to settle: settle it now instead of dragging a card that is about to move
+    if (reflowTimer) { e.preventDefault(); reflow(); return; }
+    startDrag(e, grip.closest('.card'), grip); return;
+  }
+  if (e.target.closest('.check, input, textarea')) return;
+  const row = e.target.closest('.row');
+  if (!row) return;
+  const li = row.closest('.card');
+  gesture = { li, row, x: e.clientX, y: e.clientY, t: performance.now(), pid: e.pointerId, mode: 'pending', dx: 0, lastX: e.clientX, lastT: performance.now(), v: 0 };
+  gesture.pressTimer = setTimeout(() => { if (gesture && gesture.mode === 'pending') li.classList.add('pressed'); }, 70);
+});
+document.addEventListener('pointermove', e => {
+  if (drag && e.pointerId === drag.pid) { drag.lastY = e.clientY; dragMove(); return; }
+  const g = gesture;
+  if (!g || e.pointerId !== g.pid) return;
+  const dx = e.clientX - g.x, dy = e.clientY - g.y;
+  if (g.mode === 'pending') {
+    if (Math.hypot(dx, dy) <= 8) return;
+    if (Math.abs(dx) > Math.abs(dy) * 1.25 && dx < 0 && !g.li.classList.contains('open')) {
+      g.mode = 'swipe';
+      g.x = e.clientX; // start from here to avoid jump
+      g.li.classList.remove('pressed');
+      g.li.classList.add('swiping');
+      g.inner = $('.card-inner', g.li);
+      g.inner.classList.remove('springback');
+      g.w = g.li.offsetWidth;
+      try { g.row.setPointerCapture(e.pointerId); } catch (_) {}
+    } else {
+      g.li.classList.remove('pressed');
+      clearTimeout(g.pressTimer);
+      gesture = null; // let native scroll take over
+    }
+    return;
+  }
+  if (g.mode === 'swipe') {
+    e.preventDefault();
+    let d = e.clientX - g.x;
+    if (d > 0) d = d * .2; // resist rightward
+    const now = performance.now();
+    g.v = (e.clientX - g.lastX) / Math.max(1, now - g.lastT);
+    g.lastX = e.clientX; g.lastT = now;
+    g.dx = d;
+    g.inner.style.transform = `translate3d(${d}px,0,0)`;
+    const armed = -d > g.w * .42;
+    if (armed !== g.li.classList.contains('armed')) { g.li.classList.toggle('armed', armed); if (armed) haptic(); }
+  }
+}, { passive: false });
+function endGesture(e, cancelled) {
+  if (drag && e.pointerId === drag.pid) { endDrag(); return; }
+  const g = gesture;
+  if (!g || e.pointerId !== g.pid) { maybeOutsideTap(e, cancelled); return; }
+  gesture = null;
+  clearTimeout(g.pressTimer);
+  g.li.classList.remove('pressed');
+  if (g.mode === 'pending') {
+    if (!cancelled) { tapSuppress = true; toggle(g.li); }
+    return;
+  }
+  if (g.mode === 'swipe') {
+    const commit = !cancelled && (-g.dx > g.w * .42 || (g.v < -.6 && -g.dx > 50));
+    if (commit) {
+      g.inner.classList.add('flyout');
+      g.inner.style.transform = `translate3d(${-g.w - 20}px,0,0)`;
+      setTimeout(() => removeCard(g.li, true), dur(200));
+    } else {
+      g.inner.classList.add('springback');
+      g.inner.style.transform = '';
+      g.li.classList.remove('armed');
+      setTimeout(() => { g.li.classList.remove('swiping'); g.inner.classList.remove('springback'); }, dur(450));
+    }
+  }
+}
+lists.addEventListener('click', e => {
+  const ck = e.target.closest('.check');
+  if (ck) { e.stopPropagation(); toggleChecked(ck.closest('.card')); }
+});
+document.addEventListener('pointerup', e => endGesture(e, false));
+document.addEventListener('pointercancel', e => endGesture(e, true));
+lists.addEventListener('keydown', e => {
+  const row = e.target.closest && e.target.classList.contains('row') ? e.target : null;
+  if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(row.closest('.card')); }
+});
+
+// tap outside the open card collapses it
+let outside = null, tapSuppress = false;
+document.addEventListener('pointerdown', e => { outside = { x: e.clientX, y: e.clientY, target: e.target }; tapSuppress = false; }, true);
+function maybeOutsideTap(e, cancelled) {
+  const o = outside; outside = null;
+  if (!o || cancelled || tapSuppress || !openId) return;
+  if (Math.hypot(e.clientX - o.x, e.clientY - o.y) > 10) return;
+  const li = cardById(openId);
+  if (!li || li.contains(o.target) || composer.contains(o.target)) return;
+  if (o.target.closest && o.target.closest('.row')) return;
+  collapse(li);
+}
+
+/* ---------------- Reorder (grip, pointer events) ---------------- */
+let drag = null;
+function startDrag(e, li, grip) {
+  e.preventDefault();
+  if (openId) collapse(cardById(openId), true);
+  const ul = li.parentNode; // a drag is confined to its own block
+  const cards = liveCards(ul);
+  const i = cards.indexOf(li);
+  if (i < 0) return;
+  const metrics = cards.map(c => ({ top: c.offsetTop, h: c.offsetHeight }));
+  drag = { li, ul, i, target: i, cards, metrics, startY: e.clientY, lastY: e.clientY, startScroll: scroller.scrollTop, pid: e.pointerId, raf: 0 };
+  try { grip.setPointerCapture(e.pointerId); } catch (_) {}
+  li.classList.add('dragging');
+  cards.forEach(c => { if (c !== li) c.classList.add('shift'); });
+  haptic();
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+function dragMove() {
+  const d = drag, m = d.metrics, self = m[d.i];
+  let dy = d.lastY - d.startY + (scroller.scrollTop - d.startScroll);
+  const minDy = m[0].top - self.top, last = m[m.length - 1];
+  const maxDy = last.top + last.h - self.h - self.top;
+  if (dy < minDy) dy = minDy - Math.sqrt(minDy - dy) * 2;
+  if (dy > maxDy) dy = maxDy + Math.sqrt(dy - maxDy) * 2;
+  d.li.style.transform = `translate3d(0,${dy}px,0)`;
+  const center = self.top + dy + self.h / 2;
+  let t = d.i;
+  for (let j = d.i + 1; j < m.length; j++) if (center > m[j].top + m[j].h / 2) t = j;
+  for (let j = d.i - 1; j >= 0; j--) if (center < m[j].top + m[j].h / 2) t = j;
+  if (t !== d.target) {
+    d.target = t;
+    haptic();
+    d.cards.forEach((c, j) => {
+      if (j === d.i) return;
+      let s = 0;
+      if (t > d.i && j > d.i && j <= t) s = -self.h;
+      else if (t < d.i && j < d.i && j >= t) s = self.h;
+      c.style.transform = s ? `translate3d(0,${s}px,0)` : '';
+    });
+  }
+}
+function autoScroll() {
+  if (!drag) return;
+  const sr = scroller.getBoundingClientRect();
+  const topEdge = sr.top + topInset() + 70;
+  const botEdge = sr.top + composerTop() - 50;
+  const y = drag.lastY;
+  let v = 0;
+  if (y < topEdge) v = -Math.min(1, (topEdge - y) / 90);
+  else if (y > botEdge) v = Math.min(1, (y - botEdge) / 90);
+  if (v) {
+    const before = scroller.scrollTop;
+    scroller.scrollTop += v * v * Math.sign(v) * 16 + Math.sign(v) * 2;
+    if (scroller.scrollTop !== before) dragMove();
+  }
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+function endDrag() {
+  const d = drag; drag = null;
+  cancelAnimationFrame(d.raf);
+  const m = d.metrics, self = m[d.i];
+  let final = 0;
+  if (d.target > d.i) final = m[d.target].top + m[d.target].h - self.h - self.top;
+  else if (d.target < d.i) final = m[d.target].top - self.top;
+  d.li.classList.add('settling');
+  d.li.classList.remove('dragging');
+  d.li.style.transform = `translate3d(0,${final}px,0)`;
+  setTimeout(() => {
+    const others = d.cards.filter(c => c !== d.li);
+    if (d.target !== d.i) {
+      // remove from the one array, re-insert before the block item that now follows it
+      // (or after the block item that now precedes it, if it is last in its block)
+      const from = state.items.findIndex(x => x.id === d.li.dataset.id);
+      const moved = from < 0 ? null : state.items.splice(from, 1)[0];
+      const next = others[d.target], prev = others[d.target - 1];
+      let at = state.items.length;
+      if (next) at = state.items.findIndex(x => x.id === next.dataset.id);
+      else if (prev) at = state.items.findIndex(x => x.id === prev.dataset.id) + 1;
+      if (moved) { state.items.splice(at < 0 ? state.items.length : at, 0, moved); save(true); }
+    }
+    d.ul.classList.add('no-anim');
+    d.cards.forEach(c => { c.classList.remove('shift', 'settling'); c.style.transform = ''; });
+    if (d.li.parentNode === d.ul) d.ul.insertBefore(d.li, others[d.target] || null);
+    d.ul.getBoundingClientRect();
+    d.ul.classList.remove('no-anim');
+  }, dur(320));
+}
+// block page scroll while dragging (iOS)
+document.addEventListener('touchmove', e => { if (drag || (gesture && gesture.mode === 'swipe')) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (!e.target.closest('input,textarea')) e.preventDefault(); });
+
+/* ---------------- Boot ---------------- */
+fitFrame();
+render();
+updateComposer();
+layoutPad();
+requestAnimationFrame(() => { layoutPad(); scroller.scrollTop = 0; });
+framedMQ.addEventListener && framedMQ.addEventListener('change', () => { fitFrame(); onViewport(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Groceries">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Groceries</title>
+<style>
+:root{
+  --accent:#1E9E55;
+  --accent-press:#178446;
+  --bg:#F2F2F7;
+  --card:#FFFFFF;
+  --label:#000000;
+  --label2:rgba(60,60,67,.6);
+  --label3:rgba(60,60,67,.3);
+  --placeholder:rgba(60,60,67,.42);
+  --sep:rgba(60,60,67,.29);
+  --fill:rgba(118,118,128,.12);
+  --fill-strong:rgba(118,118,128,.2);
+  --red:#FF3B30;
+  --red-tint:rgba(255,59,48,.1);
+  --glass:rgba(255,255,255,.62);
+  --glass-hi:rgba(255,255,255,.95);
+  --glass-edge:rgba(0,0,0,.07);
+  --glass-shadow:0 10px 30px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.06);
+  --card-shadow:0 .5px 0 rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.04);
+  --lift-shadow:0 18px 40px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.08);
+  --ring:rgba(60,60,67,.32);
+  --card-done:color-mix(in srgb,var(--card) 45%,var(--bg));
+  --glass-dock:rgba(250,250,252,.8);
+  --hair:1px;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+  --kb:0px;
+  --spring:cubic-bezier(.34,1.36,.64,1);
+  --spring-soft:cubic-bezier(.3,1.18,.5,1);
+  --ease:cubic-bezier(.32,.72,0,1);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+}
+@media (min-resolution:2dppx){:root{--hair:.5px}}
+@media (prefers-color-scheme:dark){
+  :root{
+    --accent:#34D07A;
+    --accent-press:#2AB868;
+    --bg:#000000;
+    --card:#1C1C1E;
+    --label:#FFFFFF;
+    --label2:rgba(235,235,245,.6);
+    --label3:rgba(235,235,245,.3);
+    --placeholder:rgba(235,235,245,.4);
+    --sep:rgba(84,84,88,.65);
+    --fill:rgba(118,118,128,.24);
+    --fill-strong:rgba(118,118,128,.32);
+    --red:#FF453A;
+    --red-tint:rgba(255,69,58,.16);
+    --glass:rgba(38,38,42,.58);
+    --glass-hi:rgba(255,255,255,.16);
+    --glass-edge:rgba(255,255,255,.07);
+    --glass-shadow:0 10px 30px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.3);
+    --card-shadow:none;
+    --lift-shadow:0 18px 40px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.4);
+    --ring:rgba(235,235,245,.34);
+    --card-done:color-mix(in srgb,var(--card) 55%,var(--bg));
+    --glass-dock:rgba(34,34,38,.8);
+  }
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg)}
+body{
+  font-family:var(--font);color:var(--label);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  overscroll-behavior:none;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+button:focus{outline:none}
+button:focus-visible,.text:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,textarea{font-family:var(--font);-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img{-webkit-user-drag:none;user-select:none}
+svg{display:block}
+
+/* ---------- Device / frame ---------- */
+.device{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
+.app{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
+.island,.statusbar,.homebar{display:none}
+
+@media (min-width:501px){
+  html,body{background:#E4E4E9}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(120% 90% at 50% 0%,#F4F4F7 0%,#DCDCE2 100%);
+  }
+  .device{
+    position:relative;inset:auto;width:390px;height:844px;flex:none;
+    border-radius:55px;
+    transform:scale(var(--frame-scale,1));
+    box-shadow:
+      0 0 0 10px #101012,
+      0 0 0 11.5px #3A3A3E,
+      0 0 0 12px #1A1A1C,
+      0 50px 90px -20px rgba(0,0,0,.35),
+      0 30px 60px -30px rgba(0,0,0,.3);
+    isolation:isolate;
+  }
+  .app{--sat:54px;--sab:34px;--sal:0px;--sar:0px;border-radius:55px}
+  .island{display:block;position:absolute;top:11px;left:50%;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#000;z-index:60;pointer-events:none}
+  .statusbar{
+    display:flex;position:absolute;top:0;left:0;right:0;height:54px;z-index:59;pointer-events:none;
+    align-items:center;justify-content:space-between;padding:4px 30px 0 52px;color:var(--label);
+  }
+  .statusbar .time{font-size:17px;font-weight:600;letter-spacing:-.4px}
+  .statusbar .icons{display:flex;gap:6px;align-items:center}
+  .homebar{display:block;position:absolute;bottom:8px;left:50%;width:136px;height:5px;margin-left:-68px;border-radius:3px;background:var(--label);z-index:60;pointer-events:none}
+}
+@media (min-width:501px) and (prefers-color-scheme:dark){
+  html,body{background:#0E0E10}
+  body{background:radial-gradient(120% 90% at 50% 0%,#232327 0%,#0B0B0D 100%)}
+  .device{box-shadow:0 0 0 10px #000,0 0 0 11.5px #3A3A3E,0 0 0 12px #1A1A1C,0 50px 90px -20px rgba(0,0,0,.7)}
+}
+
+/* ---------- Scroll area ---------- */
+.scroller{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+  scrollbar-width:none;
+}
+.scroller::-webkit-scrollbar{display:none}
+.content{
+  min-height:100%;display:flex;flex-direction:column;
+  padding:calc(var(--sat) + 10px) calc(12px + var(--sar)) var(--pad-bottom,120px) calc(12px + var(--sal));
+}
+.spacer{flex:1 1 auto;display:flex;align-items:center;justify-content:center}
+
+.empty{
+  text-align:center;padding:0 32px 60px;color:var(--label2);
+  animation:fadeUp .5s var(--ease) both;
+}
+.empty[hidden]{display:none}
+.empty .ico{width:56px;height:56px;margin:0 auto 12px;color:var(--label3)}
+.empty h2{margin:0;font-size:20px;line-height:25px;font-weight:600;color:var(--label);letter-spacing:.38px}
+.empty p{margin:4px 0 0;font-size:15px;line-height:20px;letter-spacing:-.24px}
+
+.topfade{
+  position:absolute;top:0;left:0;right:0;height:calc(var(--sat) + 14px);z-index:30;pointer-events:none;
+  background:linear-gradient(to bottom,var(--bg) 0%,var(--bg) 62%,transparent 100%);
+}
+.botfade{
+  position:absolute;left:0;right:0;bottom:0;height:calc(var(--sab) + 72px + var(--kb));z-index:15;pointer-events:none;
+  background:linear-gradient(to bottom,transparent 0%,var(--bg) 85%);opacity:.7;
+}
+
+/* ---------- Cards ---------- */
+.list{list-style:none;margin:0;padding:0;position:relative}
+.card{position:relative;padding-bottom:8px;will-change:auto}
+.card-box{
+  position:relative;border-radius:18px;overflow:hidden;background:var(--card);
+  box-shadow:var(--card-shadow);
+  transition:transform .28s var(--spring),box-shadow .3s var(--ease),opacity .3s var(--ease),background-color .3s var(--ease);
+  transform:translateZ(0);
+}
+.swipe-bg{
+  position:absolute;inset:0;background:var(--red);color:#fff;opacity:0;
+  display:flex;align-items:center;justify-content:flex-end;padding-right:24px;
+}
+.swipe-bg svg{transition:transform .25s var(--spring)}
+.card.swiping .swipe-bg{opacity:1}
+.card.armed .swipe-bg svg{transform:scale(1.25)}
+.card-inner{position:relative;background:var(--card);border-radius:18px;will-change:transform;transition:background-color .3s var(--ease)}
+.card-inner.springback{transition:transform .45s var(--spring)}
+.card-inner.flyout{transition:transform .28s cubic-bezier(.4,0,1,1)}
+
+.row{display:flex;align-items:center;min-height:60px;touch-action:pan-y;cursor:pointer;outline:none}
+.check{
+  position:relative;flex:none;width:52px;align-self:stretch;min-height:60px;
+  display:flex;align-items:center;justify-content:center;touch-action:manipulation;
+}
+.ring{
+  width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
+  box-shadow:inset 0 0 0 1.7px var(--ring);
+  transition:background-color .2s var(--ease),box-shadow .2s var(--ease),transform .25s var(--spring);
+}
+.ring svg path{stroke-dasharray:13;stroke-dashoffset:13;transition:stroke-dashoffset .26s var(--ease) .06s}
+.card.checked .ring{background:var(--accent);box-shadow:inset 0 0 0 1.7px var(--accent)}
+.card.checked .ring svg path{stroke-dashoffset:0}
+.check:active .ring{transform:scale(.86)}
+.ring.pop{animation:pop .48s var(--spring)}
+@keyframes pop{0%{transform:scale(.86)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+.text{flex:1 1 auto;min-width:0;padding:9px 0;outline:none;border-radius:6px}
+.name{font-size:17px;line-height:22px;font-weight:500;letter-spacing:-.41px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .3s var(--ease)}
+.name span{
+  background:linear-gradient(var(--label2),var(--label2)) no-repeat 0 56%/0% 1.5px;
+  transition:background-size .32s var(--ease);
+}
+.desc{
+  font-size:14px;line-height:18px;color:var(--label2);letter-spacing:-.15px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;transition:color .3s var(--ease);
+}
+.card:not(.has-desc) .desc{display:none}
+.thumb{
+  width:40px;height:40px;border-radius:10px;overflow:hidden;flex:none;margin-left:10px;background:var(--fill);
+  transition:opacity .3s var(--ease),filter .3s var(--ease);
+}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.card:not(.has-photo) .thumb{display:none}
+.handle{position:relative;width:50px;height:60px;flex:none;align-self:flex-start}
+.grip{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--label3);touch-action:none;cursor:grab;transition:color .2s var(--ease)}
+.grip:active{cursor:grabbing}
+
+/* checked = done, quieter */
+.card.checked .card-box,.card.checked .card-inner{background:var(--card-done)}
+.card.checked .card-box{box-shadow:none}
+.card.checked .name{color:var(--label2)}
+.card.checked .name span{background-size:100% 1.5px}
+.card.checked .desc{color:var(--label3)}
+.card.checked .thumb{opacity:.6;filter:saturate(.65)}
+
+.card.pressed .card-box{transform:scale(.975)}
+.card.dragging{z-index:40}
+.card.dragging .card-box{transform:scale(1.035);box-shadow:var(--lift-shadow);opacity:1}
+.card.dragging .grip{color:var(--accent)}
+.card.shift{transition:transform .42s var(--spring-soft)}
+.card.settling{transition:transform .32s var(--ease)}
+.flip{transition:transform .5s var(--spring-soft)}
+.card.removing{transition:height .38s var(--ease),padding .38s var(--ease),opacity .28s var(--ease);overflow:hidden}
+.card.removing .card-box{transition:transform .38s var(--ease)}
+.card.removing.fade .card-box{transform:scale(.92);opacity:0;transition:transform .32s var(--ease),opacity .25s var(--ease)}
+.card.enter .card-box{animation:springIn .62s var(--spring) both}
+.no-anim,.no-anim *{transition:none !important}
+
+.sec{
+  padding:16px 8px 8px;font-size:13px;line-height:18px;font-weight:600;letter-spacing:-.08px;
+  text-transform:uppercase;color:var(--label2);transition:opacity .3s var(--ease);
+}
+.sec[hidden]{display:none}
+.sec.appear{animation:fadeUp .45s var(--ease) both}
+
+/* editing: ring on the edited card, rest of the list dims */
+.card.editing .card-box{box-shadow:0 0 0 2px var(--accent),0 8px 22px color-mix(in srgb,var(--accent) 16%,transparent)}
+.app.docked .card:not(.editing):not(.dragging) .card-box{opacity:.5}
+.app.docked .sec{opacity:.5}
+
+@keyframes springIn{
+  0%{opacity:0;transform:translateY(26px) scale(.9)}
+  45%{opacity:1}
+  100%{opacity:1;transform:none}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- Composer / dock ---------- */
+.composer{
+  position:absolute;left:0;right:0;z-index:50;
+  bottom:max(calc(var(--sab) - 8px),12px);
+  display:flex;align-items:flex-end;gap:8px;
+  padding:0 calc(12px + var(--sar)) 0 calc(12px + var(--sal));
+  transition:bottom .3s var(--ease),transform .42s var(--spring-soft);
+}
+.app.kb-open .composer{bottom:calc(var(--kb) + 8px)}
+.composer.swiping{transition:none}
+.glass{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);
+  box-shadow:inset 0 .5px 0 var(--glass-hi),inset 0 0 0 .5px var(--glass-edge),var(--glass-shadow);
+}
+.cam{
+  width:48px;height:48px;border-radius:24px;flex:none;display:flex;align-items:center;justify-content:center;
+  color:var(--label);overflow:hidden;
+  transition:transform .4s var(--spring),width .5s var(--spring-soft),margin .5s var(--spring-soft),opacity .25s var(--ease);
+}
+.cam svg{flex:none}
+.cam:active{transform:scale(.9)}
+.composer.docked .cam{width:0;margin-right:-8px;opacity:0;transform:scale(.4);pointer-events:none;transition:transform .35s var(--ease),width .45s var(--ease),margin .45s var(--ease),opacity .18s var(--ease)}
+.capsule{
+  position:relative;flex:1 1 auto;min-width:0;height:48px;border-radius:24px;overflow:hidden;
+  transition:height .52s var(--spring-soft),border-radius .45s var(--ease),background-color .3s var(--ease);
+}
+.composer.docked .capsule{border-radius:26px;background:var(--glass-dock)}
+.crow{
+  position:absolute;left:0;right:0;bottom:0;height:48px;display:flex;align-items:center;
+  padding:0 6px 0 18px;transition:padding .3s var(--ease),opacity .22s var(--ease) .14s;
+}
+.composer.has-photo .crow{padding-left:7px}
+.composer.docked .crow{opacity:0;pointer-events:none;transition:opacity .12s var(--ease)}
+.chip{
+  position:relative;flex:none;width:34px;height:34px;border-radius:17px;margin-right:10px;
+  animation:chipIn .45s var(--spring) both;
+}
+.chip[hidden]{display:none}
+.chip img{width:100%;height:100%;object-fit:cover;border-radius:17px;display:block;pointer-events:none;box-shadow:0 0 0 .5px rgba(0,0,0,.1)}
+.chip-x{
+  position:absolute;top:-5px;right:-6px;width:19px;height:19px;border-radius:50%;
+  background:var(--label);color:var(--card);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--card);
+}
+.chip-x::before,.send::before,.ph-btn::before,.ed-done::before{content:"";position:absolute;inset:-5px}
+@keyframes chipIn{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.add-input{
+  flex:1 1 auto;min-width:0;height:46px;border:0;background:transparent;outline:none;padding:0;
+  font-size:17px;letter-spacing:-.41px;color:var(--label);caret-color:var(--accent);
+}
+.add-input::placeholder{color:var(--placeholder)}
+.send{
+  position:relative;flex:none;width:36px;height:36px;border-radius:18px;margin-left:6px;
+  background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;
+  transform:scale(.2);opacity:0;pointer-events:none;
+  transition:transform .4s var(--spring),opacity .18s var(--ease),background-color .15s;
+  box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 40%,transparent);
+}
+.composer.has-text .send{transform:none;opacity:1;pointer-events:auto}
+.send:active{background:var(--accent-press);transform:scale(.88)}
+
+/* the editor that lives inside the morphed capsule */
+.editor{
+  position:absolute;left:0;right:0;top:0;height:48px;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transform:translateY(10px);
+  transition:opacity .16s var(--ease),transform .4s var(--ease);
+}
+.composer.docked .editor{opacity:1;pointer-events:auto;transform:none;transition:opacity .3s var(--ease) .08s,transform .52s var(--spring-soft)}
+.grab{flex:none;height:20px;display:flex;justify-content:center;padding-top:7px;touch-action:none;cursor:grab}
+.grab span{width:36px;height:5px;border-radius:3px;background:var(--label3)}
+.ed-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.ed-body::-webkit-scrollbar{display:none}
+.ed-inner{padding:0 12px 4px}
+.editor.swap .ed-inner{animation:swapIn .34s var(--ease)}
+@keyframes swapIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fields{background:var(--fill);border-radius:14px;overflow:hidden}
+.f-name,.f-desc{
+  display:block;width:100%;border:0;margin:0;background:transparent;color:var(--label);
+  outline:none;caret-color:var(--accent);-webkit-appearance:none;appearance:none;border-radius:0;
+}
+.f-name{height:46px;padding:0 14px;font-size:17px;font-weight:600;letter-spacing:-.41px}
+.f-desc{padding:12px 14px 13px;font-size:16px;line-height:21px;letter-spacing:-.3px;resize:none;min-height:46px;overflow:hidden}
+.f-name::placeholder,.f-desc::placeholder{color:var(--placeholder);font-weight:400}
+.hair{height:var(--hair);background:var(--sep);margin-left:14px}
+
+.ph-row{margin-top:10px;display:flex;align-items:center;gap:10px;min-height:52px}
+.ph-thumb{position:relative;flex:none;width:52px;height:52px;border-radius:12px;overflow:hidden;background:var(--fill);transition:transform .25s var(--spring)}
+.ph-thumb::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12)}
+.ph-thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.ph-thumb:active{transform:scale(.94)}
+.ph-meta{flex:1 1 auto;min-width:0;font-size:15px;line-height:20px;letter-spacing:-.24px;color:var(--label2)}
+.ph-btn{
+  position:relative;flex:none;height:36px;padding:0 13px;border-radius:18px;background:var(--fill);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  color:var(--accent);font-size:15px;font-weight:600;letter-spacing:-.24px;transition:transform .2s var(--spring),background-color .15s;
+}
+.ph-btn.icon{width:36px;padding:0;color:var(--label2)}
+.ph-btn:active{transform:scale(.94);background:var(--fill-strong)}
+.ph-add{
+  width:100%;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--fill);color:var(--accent);font-size:17px;font-weight:500;letter-spacing:-.41px;
+  transition:background-color .15s,transform .2s var(--spring);
+}
+.ph-add:active{transform:scale(.97);background:var(--fill-strong)}
+.ed-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 10px 10px 4px;touch-action:none}
+.ed-remove{
+  height:44px;padding:0 10px;border-radius:22px;display:flex;align-items:center;gap:5px;
+  color:var(--red);font-size:17px;font-weight:500;letter-spacing:-.41px;transition:background-color .15s
+}
+.ed-remove:active{background:var(--red-tint)}
+.ed-done{
+  position:relative;height:40px;padding:0 22px;border-radius:20px;background:var(--accent);color:#fff;
+  font-size:17px;font-weight:600;letter-spacing:-.41px;
+  box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 35%,transparent);
+  transition:transform .25s var(--spring),background-color .15s;
+}
+.ed-done:active{transform:scale(.94);background:var(--accent-press)}
+
+/* ---------- Full-screen photo ---------- */
+.viewer{
+  position:absolute;inset:0;z-index:80;background:rgba(0,0,0,.94);
+  display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .28s var(--ease);
+}
+.viewer[hidden]{display:none}
+.viewer.show{opacity:1}
+.viewer img{max-width:100%;max-height:100%;object-fit:contain;transform:scale(.88);transition:transform .5s var(--spring-soft);pointer-events:none}
+.viewer.show img{transform:none}
+.viewer .vclose{
+  position:absolute;top:calc(var(--sat) + 8px);right:calc(14px + var(--sar));width:36px;height:36px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  background:rgba(60,60,64,.55);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+.viewer .vclose::before{content:"";position:absolute;inset:-6px}
+
+.file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important;transition-delay:0s !important;scroll-behavior:auto !important}
+}
+</style>
+</head>
+<body>
+<div class="device" id="device">
+  <div class="island" aria-hidden="true"></div>
+  <div class="statusbar" aria-hidden="true">
+    <span class="time">9:41</span>
+    <span class="icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.6c2.2 0 4.2.85 5.7 2.25l1.1-1.1A9.6 9.6 0 0 0 8 1 9.6 9.6 0 0 0 1.2 3.75l1.1 1.1A8.1 8.1 0 0 1 8 2.6Zm0 3.2c1.3 0 2.5.5 3.4 1.3l1.1-1.1A6.4 6.4 0 0 0 8 4.2c-1.7 0-3.3.65-4.5 1.8l1.1 1.1c.9-.8 2.1-1.3 3.4-1.3Zm0 3.2c-.45 0-.86.17-1.17.45L8 10.6l1.17-1.15A1.7 1.7 0 0 0 8 9Z"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.8" stroke="currentColor" opacity=".35"/><rect x="2" y="2" width="20" height="9" rx="2.5" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2Z" fill="currentColor" opacity=".4"/></svg>
+    </span>
+  </div>
+  <div class="homebar" aria-hidden="true"></div>
+
+  <div class="app" id="app">
+    <div class="scroller" id="scroller">
+      <div class="content" id="content">
+        <ul class="list" id="listTodo" aria-label="To buy"></ul>
+        <div class="sec" id="sec" hidden>Checked</div>
+        <ul class="list" id="listDone" aria-label="Checked"></ul>
+        <div class="spacer" id="spacer">
+          <div class="empty" id="empty" hidden>
+            <svg class="ico" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20h40l-4.2 22.4A4 4 0 0 1 39.9 46H16.1a4 4 0 0 1-3.9-3.6L8 20Z"/><path d="M19 20 26 9M37 20 30 9M22 29v8M28 29v8M34 29v8"/></svg>
+            <h2>All done</h2>
+            <p>Add what you need below.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="topfade" aria-hidden="true"></div>
+    <div class="botfade" aria-hidden="true"></div>
+
+    <div class="composer" id="composer">
+      <button class="cam glass" id="cam" aria-label="Attach photo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4.5 7.5h3l1.6-2.2c.2-.3.5-.4.8-.4h4.2c.3 0 .6.1.8.4l1.6 2.2h3A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V9a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.2" r="3.4"/></svg>
+      </button>
+      <div class="capsule glass" id="capsule">
+        <div class="crow" id="crow">
+          <div class="chip" id="chip" hidden>
+            <img id="chipImg" alt="Attached photo">
+            <button class="chip-x" id="chipX" aria-label="Remove attached photo">
+              <svg width="9" height="9" viewBox="0 0 10 10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2 2l6 6M8 2 2 8"/></svg>
+            </button>
+          </div>
+          <label class="sr" for="addInput">Add item</label>
+          <input class="add-input" id="addInput" type="text" placeholder="Add item" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" maxlength="80">
+          <button class="send" id="send" aria-label="Add item" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13.5V2.8M3.2 7.4 8 2.6l4.8 4.8"/></svg>
+          </button>
+        </div>
+        <div class="editor" id="editor" role="group" aria-label="Edit item" inert>
+          <div class="grab" id="grab" aria-hidden="true"><span></span></div>
+          <div class="ed-body" id="edBody"><div class="ed-inner" id="edInner">
+            <div class="fields">
+              <input class="f-name" id="fName" type="text" aria-label="Name" placeholder="Name" enterkeyhint="done" autocomplete="off" autocapitalize="sentences" maxlength="80">
+              <div class="hair"></div>
+              <textarea class="f-desc" id="fDesc" rows="1" aria-label="Description" placeholder="Add description"></textarea>
+            </div>
+            <div class="ph-row" id="phRow"></div>
+          </div></div>
+          <div class="ed-foot" id="edFoot">
+            <button class="ed-remove" id="edRemove"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.8c0-.7.5-1.3 1.2-1.3h2.6c.7 0 1.2.6 1.2 1.3v1.7M6.2 6.5l.9 12.6c.1 1 .9 1.9 2 1.9h5.8c1 0 1.9-.8 2-1.9l.9-12.6M10.2 10.5v6.5M13.8 10.5v6.5"/></svg><span>Remove</span></button>
+            <button class="ed-done" id="edDone">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viewer" id="viewer" hidden role="dialog" aria-label="Photo">
+      <img id="vImg" alt="">
+      <button class="vclose" id="vClose" aria-label="Close photo">
+        <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<input class="file" id="file" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+
+<script>
+(() => {
+'use strict';
+const KEY = 'groceries-t4';
+const $ = (s, r = document) => r.querySelector(s);
+const app = $('#app'), device = $('#device'), scroller = $('#scroller'), content = $('#content'),
+      listA = $('#listTodo'), listB = $('#listDone'), sec = $('#sec'),
+      emptyEl = $('#empty'),
+      composer = $('#composer'), capsule = $('#capsule'), crow = $('#crow'),
+      input = $('#addInput'), sendBtn = $('#send'), camBtn = $('#cam'),
+      chip = $('#chip'), chipImg = $('#chipImg'), chipX = $('#chipX'), fileInput = $('#file'),
+      editor = $('#editor'), grab = $('#grab'), edBody = $('#edBody'), edInner = $('#edInner'),
+      fName = $('#fName'), fDesc = $('#fDesc'), phRow = $('#phRow'), edFoot = $('#edFoot'),
+      edRemove = $('#edRemove'), edDone = $('#edDone'),
+      viewer = $('#viewer'), vImg = $('#vImg'), vClose = $('#vClose');
+const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const framedMQ = matchMedia('(min-width: 501px)');
+const dur = ms => reduceMQ.matches ? 0 : ms;
+const haptic = () => { try { navigator.vibrate && navigator.vibrate(8); } catch (_) {} };
+
+const ICON = {
+  trash: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.8c0-.7.5-1.3 1.2-1.3h2.6c.7 0 1.2.6 1.2 1.3v1.7M6.2 6.5l.9 12.6c.1 1 .9 1.9 2 1.9h5.8c1 0 1.9-.8 2-1.9l.9-12.6M10.2 10.5v6.5M13.8 10.5v6.5"/></svg>',
+  grip: '<svg width="20" height="14" viewBox="0 0 20 14" fill="currentColor"><rect y="0" width="20" height="2.2" rx="1.1"/><rect y="5.9" width="20" height="2.2" rx="1.1"/><rect y="11.8" width="20" height="2.2" rx="1.1"/></svg>',
+  check: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.3 5.8 10 11 4.2"/></svg>',
+  camera: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4.5 7.5h3l1.6-2.2c.2-.3.5-.4.8-.4h4.2c.3 0 .6.1.8.4l1.6 2.2h3A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V9a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.2" r="3.4"/></svg>',
+  x: '<svg width="13" height="13" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>'
+};
+
+/* ---------------- Seed photos (drawn locally) ---------------- */
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function eggPath(x, w, h) {
+  x.beginPath();
+  x.moveTo(0, -h);
+  x.bezierCurveTo(w * .62, -h, w, -h * .1, w, h * .38);
+  x.bezierCurveTo(w, h * .82, w * .58, h, 0, h);
+  x.bezierCurveTo(-w * .58, h, -w, h * .82, -w, h * .38);
+  x.bezierCurveTo(-w, -h * .1, -w * .62, -h, 0, -h);
+  x.closePath();
+}
+function drawAvocados() {
+  const c = canvas(640, 640), x = c.getContext('2d');
+  let g = x.createLinearGradient(0, 0, 640, 640);
+  g.addColorStop(0, '#F3EBDA'); g.addColorStop(1, '#DCCBA6');
+  x.fillStyle = g; x.fillRect(0, 0, 640, 640);
+  // board
+  x.save(); x.shadowColor = 'rgba(80,55,20,.28)'; x.shadowBlur = 40; x.shadowOffsetY = 18;
+  g = x.createLinearGradient(0, 120, 0, 560); g.addColorStop(0, '#C99A62'); g.addColorStop(1, '#A87842');
+  x.fillStyle = g; x.beginPath(); x.ellipse(320, 340, 290, 250, -.12, 0, Math.PI * 2); x.fill(); x.restore();
+  x.strokeStyle = 'rgba(90,55,20,.12)'; x.lineWidth = 2;
+  for (let i = 0; i < 9; i++) { x.beginPath(); x.ellipse(320, 340, 260 - i * 26, 220 - i * 22, -.12, 0, Math.PI * 2); x.stroke(); }
+  const half = (cx, cy, rot, s) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot); x.scale(s, s);
+    x.save(); x.shadowColor = 'rgba(50,30,10,.4)'; x.shadowBlur = 26; x.shadowOffsetY = 12;
+    eggPath(x, 120, 158); x.fillStyle = '#2C4A1B'; x.fill(); x.restore();
+    x.save(); x.scale(.88, .9); eggPath(x, 120, 158);
+    g = x.createRadialGradient(0, 40, 10, 0, 30, 170);
+    g.addColorStop(0, '#F4F2A8'); g.addColorStop(.55, '#D6E27C'); g.addColorStop(.85, '#A9C751'); g.addColorStop(1, '#6E9A2E');
+    x.fillStyle = g; x.fill(); x.restore();
+    g = x.createRadialGradient(-14, 30, 4, 0, 46, 58);
+    g.addColorStop(0, '#C98A55'); g.addColorStop(.6, '#8E5329'); g.addColorStop(1, '#5E3416');
+    x.fillStyle = g; x.beginPath(); x.arc(0, 46, 54, 0, Math.PI * 2); x.fill();
+    x.fillStyle = 'rgba(255,255,255,.32)'; x.beginPath(); x.ellipse(-18, 26, 16, 9, -.6, 0, Math.PI * 2); x.fill();
+    x.restore();
+  };
+  half(225, 330, -.35, 1);
+  half(430, 360, .4, .95);
+  return c.toDataURL('image/jpeg', .82);
+}
+function lemonPath(x, r) {
+  x.beginPath();
+  x.moveTo(-r * 1.16, 0);
+  x.bezierCurveTo(-r * 1.0, -r * .22, -r * .82, -r * .76, 0, -r * .76);
+  x.bezierCurveTo(r * .82, -r * .76, r * 1.0, -r * .22, r * 1.16, 0);
+  x.bezierCurveTo(r * 1.0, r * .22, r * .82, r * .76, 0, r * .76);
+  x.bezierCurveTo(-r * .82, r * .76, -r * 1.0, r * .22, -r * 1.16, 0);
+  x.closePath();
+}
+function drawLemons() {
+  const c = canvas(640, 640), x = c.getContext('2d');
+  let g = x.createLinearGradient(0, 0, 0, 640);
+  g.addColorStop(0, '#DCEBF7'); g.addColorStop(1, '#AFCDE6');
+  x.fillStyle = g; x.fillRect(0, 0, 640, 640);
+  const leaf = (cx, cy, rot) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot);
+    g = x.createLinearGradient(-60, 0, 60, 0); g.addColorStop(0, '#2F7D32'); g.addColorStop(1, '#5DB14E');
+    x.fillStyle = g; x.beginPath(); x.moveTo(-70, 0); x.quadraticCurveTo(0, -42, 70, 0); x.quadraticCurveTo(0, 42, -70, 0); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 2; x.beginPath(); x.moveTo(-62, 0); x.lineTo(62, 0); x.stroke();
+    x.restore();
+  };
+  const lemon = (cx, cy, rot, r) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot);
+    x.save(); x.shadowColor = 'rgba(30,60,100,.35)'; x.shadowBlur = 30; x.shadowOffsetY = 16;
+    lemonPath(x, r); x.fillStyle = '#F2C514'; x.fill(); x.restore();
+    lemonPath(x, r);
+    g = x.createRadialGradient(-r * .35, -r * .35, r * .05, 0, 0, r * 1.2);
+    g.addColorStop(0, '#FFF59A'); g.addColorStop(.45, '#FFDF2E'); g.addColorStop(1, '#E2A400');
+    x.fillStyle = g; x.fill();
+    x.fillStyle = 'rgba(255,255,255,.45)'; x.beginPath(); x.ellipse(-r * .35, -r * .38, r * .28, r * .1, -.25, 0, Math.PI * 2); x.fill();
+    x.restore();
+  };
+  const slice = (cx, cy, r) => {
+    x.save(); x.translate(cx, cy);
+    x.shadowColor = 'rgba(30,60,100,.3)'; x.shadowBlur = 24; x.shadowOffsetY = 12;
+    x.fillStyle = '#F4C318'; x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2); x.fill();
+    x.shadowColor = 'transparent';
+    x.fillStyle = '#FFF8D6'; x.beginPath(); x.arc(0, 0, r * .9, 0, Math.PI * 2); x.fill();
+    for (let i = 0; i < 9; i++) {
+      const a0 = i / 9 * Math.PI * 2 + .05, a1 = (i + 1) / 9 * Math.PI * 2 - .05;
+      g = x.createRadialGradient(0, 0, 4, 0, 0, r * .82);
+      g.addColorStop(0, '#FFF2A0'); g.addColorStop(1, '#FFD83A');
+      x.fillStyle = g; x.beginPath(); x.moveTo(Math.cos((a0 + a1) / 2) * 8, Math.sin((a0 + a1) / 2) * 8);
+      x.arc(0, 0, r * .8, a0, a1); x.closePath(); x.fill();
+    }
+    x.restore();
+  };
+  leaf(470, 170, -.6);
+  lemon(250, 230, -.3, 130);
+  lemon(430, 400, .25, 125);
+  slice(200, 470, 105);
+  return c.toDataURL('image/jpeg', .82);
+}
+
+/* ---------------- State ----------------
+   ONE ordered array; display = stable partition (unchecked, then checked). */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function seed() {
+  const items = [
+    { name: 'Avocados', desc: 'Two ripe, two for later in the week', photo: drawAvocados() },
+    { name: 'Sourdough loaf', checked: true },
+    { name: 'Oat milk', desc: 'Barista edition — the blue carton' },
+    { name: 'Lemons', photo: drawLemons() },
+    { name: 'Greek yogurt', checked: true },
+    { name: 'Fresh basil', desc: 'A potted one if they have it' },
+    { name: 'Eggs' },
+    { name: 'Parmesan', checked: true },
+    { name: 'Cherry tomatoes' }
+  ].map(i => ({ id: uid() + Math.random().toString(36).slice(2, 4), name: i.name, desc: i.desc || '', photo: i.photo || null, checked: !!i.checked }));
+  return { v: 2, items };
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && Array.isArray(s.items)) {
+      s.items = s.items.filter(i => i && i.id && typeof i.name === 'string')
+        .map(i => ({ id: String(i.id), name: i.name, desc: i.desc || '', photo: i.photo || null, checked: !!i.checked }));
+      return s;
+    }
+  } catch (_) {}
+  const s = seed();
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (_) {}
+  return s;
+}
+let state = load();
+let saveTimer = 0;
+function save(now) {
+  clearTimeout(saveTimer);
+  const write = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn('Could not save list', e); } };
+  if (now) write(); else saveTimer = setTimeout(write, 250);
+}
+const findItem = id => state.items.find(i => i.id === id);
+const cardById = id => id ? content.querySelector(`.card[data-id="${CSS.escape(id)}"]:not(.removing)`) : null;
+const liveCards = ul => [...ul.children].filter(c => !c.classList.contains('removing'));
+
+/* ---------------- Rendering ---------------- */
+function cardEl(it) {
+  const li = document.createElement('li');
+  li.className = 'card';
+  li.dataset.id = it.id;
+  li.innerHTML =
+    `<div class="card-box"><div class="swipe-bg" aria-hidden="true">${ICON.trash}</div>
+      <div class="card-inner">
+        <div class="row">
+          <button class="check" role="checkbox" aria-checked="false"><span class="ring">${ICON.check}</span></button>
+          <div class="text" role="button" tabindex="0" aria-haspopup="dialog"><div class="name"><span></span></div><div class="desc"></div></div>
+          <div class="thumb"></div>
+          <div class="handle"><button class="grip" aria-label="Reorder">${ICON.grip}</button></div>
+        </div>
+      </div></div>`;
+  fillRow(li, it);
+  return li;
+}
+function fillRow(li, it) {
+  $('.name span', li).textContent = it.name;
+  const d = $('.desc', li);
+  d.textContent = it.desc ? it.desc.split('\n').find(l => l.trim()) || '' : '';
+  li.classList.toggle('has-desc', !!(it.desc && it.desc.trim()));
+  const t = $('.thumb', li);
+  const cur = $('img', t);
+  if (it.photo) {
+    if (!cur || cur.src !== it.photo) { t.textContent = ''; const img = new Image(); img.alt = ''; img.decoding = 'async'; img.src = it.photo; t.appendChild(img); }
+  } else t.textContent = '';
+  li.classList.toggle('has-photo', !!it.photo);
+  li.classList.toggle('checked', !!it.checked);
+  const c = $('.check', li);
+  c.setAttribute('aria-checked', String(!!it.checked));
+  c.setAttribute('aria-label', it.name);
+  $('.grip', li).setAttribute('aria-label', `Reorder ${it.name}`);
+}
+function render() {
+  listA.textContent = ''; listB.textContent = '';
+  const fa = document.createDocumentFragment(), fb = document.createDocumentFragment();
+  for (const it of state.items) (it.checked ? fb : fa).appendChild(cardEl(it));
+  listA.appendChild(fa); listB.appendChild(fb);
+  updateMeta(); updateSec();
+}
+function updateMeta() {
+  emptyEl.hidden = state.items.length !== 0;
+}
+function updateSec() {
+  const show = liveCards(listB).length > 0;
+  if (show && sec.hidden) { sec.classList.remove('appear'); void sec.offsetWidth; sec.classList.add('appear'); }
+  sec.hidden = !show;
+}
+
+/* ---------------- Layout: composer, keyboard, padding ---------------- */
+let kb = 0, dockH = 48;
+function topInset() { return framedMQ.matches ? 54 : $('.topfade').offsetHeight - 14; }
+// y (scroller viewport coords) of the composer's bottom edge, ignoring swipe transforms
+function composerBottom() { return scroller.clientHeight - (parseFloat(getComputedStyle(composer).bottom) || 0); }
+function composerTop() { return composerBottom() - (dockId ? dockH : 48); }
+function padNeeded() { return scroller.clientHeight - composerTop() + 14; }
+function setPad(p) { content.style.setProperty('--pad-bottom', p + 'px'); }
+function layoutPad() { setPad(padNeeded()); }
+// shrinking the padding would make the scroll position jump; glide there first
+function settlePad() {
+  const old = parseFloat(content.style.getPropertyValue('--pad-bottom')) || 0, pad = padNeeded();
+  if (pad >= old) return setPad(pad);
+  const maxAfter = Math.max(0, scroller.scrollHeight - (old - pad) - scroller.clientHeight);
+  if (scroller.scrollTop > maxAfter + 1 && !reduceMQ.matches) {
+    scroller.scrollTo({ top: maxAfter, behavior: 'smooth' });
+    setTimeout(() => { if (!dockId) layoutPad(); }, 450);
+  } else setPad(pad);
+}
+function scrollToY(y, smooth) {
+  y = Math.max(0, Math.min(y, scroller.scrollHeight - scroller.clientHeight));
+  if (Math.abs(y - scroller.scrollTop) < 1) return;
+  scroller.scrollTo({ top: y, behavior: smooth && !reduceMQ.matches ? 'smooth' : 'auto' });
+}
+// layout position of a card in content coords (ignores running transforms)
+function cardPos(li) { const top = li.parentNode.offsetTop + li.offsetTop; return { top, bottom: top + li.offsetHeight - 8 }; }
+// minimal scroll so a card is fully visible between the header fade and the composer
+function revealCard(li, smooth) {
+  const { top, bottom } = cardPos(li), st = scroller.scrollTop;
+  const limB = composerTop() - 14, limT = topInset() + 10;
+  if (bottom - st > limB) scrollToY(Math.min(bottom - limB, top - limT), smooth);
+  else if (top - st < limT) scrollToY(top - limT, smooth);
+}
+// park the edited card just above the dock
+function revealEdited(smooth = true) {
+  const li = cardById(dockId);
+  if (!li) return;
+  const { top, bottom } = cardPos(li);
+  const limB = composerTop() - 14, limT = topInset() + 10;
+  scrollToY(Math.min(bottom - limB, top - limT), smooth);
+}
+let lastKb = 0;
+function onViewport() {
+  const vv = window.visualViewport;
+  kb = (!vv || framedMQ.matches) ? 0 : Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+  if (kb < 60) kb = 0;
+  app.style.setProperty('--kb', kb + 'px');
+  app.classList.toggle('kb-open', kb > 0);
+  const changed = kb !== lastKb; lastKb = kb;
+  if (!changed) return;
+  // wait for the composer's bottom transition to settle before measuring
+  setTimeout(() => {
+    if (dockId) { sizeDock(); revealEdited(true); }
+    else {
+      layoutPad();
+      const a = document.activeElement;
+      if (a === input) { const last = liveCards(listA).pop(); if (last) revealCard(last, true); }
+    }
+  }, dur(320));
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', onViewport);
+  visualViewport.addEventListener('scroll', onViewport);
+}
+window.addEventListener('resize', () => { fitFrame(); onViewport(); if (dockId) sizeDock(); else layoutPad(); });
+function fitFrame() {
+  if (!framedMQ.matches) { device.style.removeProperty('--frame-scale'); return; }
+  const s = Math.min(1, (window.innerHeight - 48) / 868, (window.innerWidth - 48) / 414);
+  device.style.setProperty('--frame-scale', s.toFixed(3));
+}
+
+/* ---------------- FLIP helper ---------------- */
+function flip(mutate) {
+  const els = [sec, ...listA.children, ...listB.children];
+  const before = new Map(els.map(e => [e, e.getBoundingClientRect()]));
+  mutate();
+  if (reduceMQ.matches) return;
+  for (const [e, r] of before) {
+    if (!e.isConnected || r.height === 0 || e.hidden) continue;
+    const d = r.top - e.getBoundingClientRect().top;
+    if (Math.abs(d) < 1) continue;
+    e.classList.remove('flip');
+    e.style.transform = `translate3d(0,${d}px,0)`;
+    e.getBoundingClientRect();
+    e.classList.add('flip');
+    e.style.transform = '';
+    clearTimeout(e._flipT);
+    e._flipT = setTimeout(() => e.classList.remove('flip'), 520);
+  }
+}
+
+/* ---------------- Check / uncheck ---------------- */
+let reflowTimer = 0;
+function toggleCheck(li) {
+  const it = findItem(li.dataset.id);
+  if (!it) return;
+  it.checked = !it.checked;
+  save(true);
+  fillRow(li, it);
+  const ring = $('.ring', li);
+  ring.classList.remove('pop'); void ring.offsetWidth; ring.classList.add('pop');
+  haptic();
+  // show the new state in place, then move; every further toggle restarts the wait
+  clearTimeout(reflowTimer);
+  reflowTimer = setTimeout(reflow, 520);
+}
+function reflow() {
+  clearTimeout(reflowTimer); reflowTimer = 0;
+  if (drag || (gesture && gesture.mode === 'swipe') || dockSwipe) { reflowTimer = setTimeout(reflow, 300); return; }
+  const want = ul => ul === listA ? state.items.filter(i => !i.checked) : state.items.filter(i => i.checked);
+  const same = ul => { const c = liveCards(ul), w = want(ul); return c.length === w.length && c.every((e, k) => e.dataset.id === w[k].id); };
+  if (same(listA) && same(listB)) return;
+  flip(() => {
+    for (const ul of [listA, listB]) for (const it of want(ul)) { const li = cardById(it.id); if (li) ul.appendChild(li); }
+    updateSec();
+  });
+  if (dockId) { layoutPad(); revealEdited(true); }
+}
+content.addEventListener('click', e => {
+  const c = e.target.closest('.check');
+  if (c && !drag) toggleCheck(c.closest('.card'));
+});
+
+/* ---------------- Composer ---------------- */
+let pendingPhoto = null;
+function updateComposer() {
+  const has = input.value.trim().length > 0;
+  composer.classList.toggle('has-text', has);
+  sendBtn.tabIndex = has ? 0 : -1;
+  input.placeholder = pendingPhoto ? 'Name this item' : 'Add item';
+}
+function setPending(url) {
+  pendingPhoto = url;
+  chip.hidden = !url;
+  composer.classList.toggle('has-photo', !!url);
+  if (url) chipImg.src = url; else chipImg.removeAttribute('src');
+  updateComposer();
+}
+function addItem() {
+  const name = input.value.trim().replace(/\s+/g, ' ');
+  if (!name) return;
+  const it = { id: uid(), name, desc: '', photo: pendingPhoto, checked: false };
+  const li = cardEl(it);
+  li.classList.add('enter');
+  flip(() => {
+    state.items.push(it);           // end of the array = end of the unchecked block
+    listA.appendChild(li);
+    updateMeta();
+  });
+  save(true);
+  input.value = '';
+  setPending(null);
+  haptic();
+  revealCard(li, true);
+  setTimeout(() => li.classList.remove('enter'), 700);
+}
+input.addEventListener('input', updateComposer);
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addItem(); }
+});
+// keep keyboard up when tapping send
+sendBtn.addEventListener('pointerdown', e => e.preventDefault());
+sendBtn.addEventListener('click', () => { addItem(); input.focus({ preventScroll: true }); });
+chipX.addEventListener('pointerdown', e => e.preventDefault());
+chipX.addEventListener('click', () => setPending(null));
+camBtn.addEventListener('click', async () => {
+  const url = await pickPhoto();
+  if (url) { setPending(url); input.focus({ preventScroll: true }); }
+});
+
+/* ---------------- Photos ---------------- */
+function pickPhoto() {
+  return new Promise(resolve => {
+    fileInput.value = '';
+    fileInput.onchange = async () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) return resolve(null);
+      try { resolve(await downscale(f)); } catch (e) { console.warn('Could not read image', e); resolve(null); }
+    };
+    fileInput.click();
+  });
+}
+function downscale(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1024 / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * s)), h = Math.max(1, Math.round(img.naturalHeight * s));
+      const c = canvas(w, h), x = c.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', .82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+    img.src = url;
+  });
+}
+function openViewer(src, alt) {
+  vImg.src = src; vImg.alt = alt || '';
+  viewer.hidden = false;
+  viewer.getBoundingClientRect();
+  viewer.classList.add('show');
+  vClose.focus({ preventScroll: true });
+}
+function closeViewer() {
+  viewer.classList.remove('show');
+  setTimeout(() => { if (!viewer.classList.contains('show')) { viewer.hidden = true; vImg.removeAttribute('src'); } }, dur(300));
+}
+viewer.addEventListener('click', closeViewer);
+
+/* ---------------- Dock: the composer morphs into the editor ---------------- */
+let dockId = null;
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function growDesc() { fDesc.style.height = 'auto'; fDesc.style.height = fDesc.scrollHeight + 'px'; }
+function renderPhotoRow(it) {
+  if (it.photo) {
+    phRow.innerHTML =
+      `<button class="ph-thumb" data-act="view" aria-label="View photo of ${esc(it.name)}"><img alt=""></button>
+       <span class="ph-meta">Photo</span>
+       <button class="ph-btn" data-act="pick">${ICON.camera}<span>Replace</span></button>
+       <button class="ph-btn icon" data-act="rm" aria-label="Remove photo">${ICON.x}</button>`;
+    $('img', phRow).src = it.photo;
+  } else {
+    phRow.innerHTML = `<button class="ph-add" data-act="pick">${ICON.camera}<span>Add Photo</span></button>`;
+  }
+}
+function fillDock(it) {
+  fName.value = it.name;
+  fDesc.value = it.desc || '';
+  renderPhotoRow(it);
+  growDesc();
+  edBody.scrollTop = 0;
+}
+function dockNatural() { return grab.offsetHeight + edInner.offsetHeight + edFoot.offsetHeight; }
+function dockCap() { return Math.max(190, composerBottom() - topInset() - 8 - 92); }
+function sizeDock() {
+  if (!dockId) return;
+  const prev = dockH;
+  dockH = Math.round(Math.min(dockNatural(), dockCap()));
+  editor.style.height = dockH + 'px';
+  capsule.style.height = dockH + 'px';
+  layoutPad();
+  // dock grew/shrank while open (description, photo, keyboard): keep the card parked above it
+  if (prev !== 48 && prev !== dockH) revealEdited(true);
+}
+function focusName() {
+  fName.focus({ preventScroll: true });
+  const n = fName.value.length;
+  try { fName.setSelectionRange(n, n); } catch (_) {}
+}
+function openDock(li) {
+  const it = li && findItem(li.dataset.id);
+  if (!it) return;
+  if (dockId === it.id) { focusName(); return; }
+  const switching = !!dockId;
+  if (switching) { const old = cardById(dockId); old && old.classList.remove('editing'); }
+  dockId = it.id;
+  li.classList.add('editing');
+  fillDock(it);
+  if (switching) { editor.classList.remove('swap'); void editor.offsetWidth; editor.classList.add('swap'); }
+  else {
+    editor.inert = false; crow.inert = true;
+    if (document.activeElement === input) input.blur();
+    composer.classList.add('docked'); app.classList.add('docked');
+  }
+  sizeDock();
+  focusName();
+  revealEdited(true);
+}
+function closeDock() {
+  if (!dockId) return;
+  const li = cardById(dockId);
+  li && li.classList.remove('editing');
+  const a = document.activeElement;
+  if (a && composer.contains(a)) a.blur();
+  if (!fName.value.trim()) { const it = findItem(dockId); if (it) fName.value = it.name; }
+  dockId = null;
+  editor.inert = true; crow.inert = false;
+  composer.classList.remove('docked'); app.classList.remove('docked');
+  capsule.style.height = '';
+  dockH = 48;
+  settlePad();
+}
+const dockItem = () => dockId && findItem(dockId);
+fName.addEventListener('input', () => {
+  const it = dockItem(), v = fName.value.trim().replace(/\s+/g, ' ');
+  if (it && v) { it.name = v; const li = cardById(it.id); li && fillRow(li, it); save(); }
+});
+fName.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); closeDock(); } });
+fName.addEventListener('blur', () => { const it = dockItem(); if (it && !fName.value.trim()) fName.value = it.name; });
+fDesc.addEventListener('input', () => {
+  const it = dockItem();
+  if (!it) return;
+  it.desc = fDesc.value; const li = cardById(it.id); li && fillRow(li, it); save();
+  growDesc(); sizeDock();
+  // keep the caret in view when the dock has hit its height cap
+  if (edBody.scrollHeight > edBody.clientHeight && fDesc.selectionEnd === fDesc.value.length) edBody.scrollTop = edBody.scrollHeight;
+});
+phRow.addEventListener('click', async e => {
+  const b = e.target.closest('button'), it = dockItem();
+  if (!b || !it) return;
+  const act = b.dataset.act;
+  if (act === 'view') openViewer(it.photo, 'Photo of ' + it.name);
+  else if (act === 'rm') { it.photo = null; save(true); const li = cardById(it.id); li && fillRow(li, it); renderPhotoRow(it); sizeDock(); }
+  else if (act === 'pick') {
+    const id = it.id, url = await pickPhoto();
+    const cur = findItem(id);
+    if (!url || !cur) return;
+    cur.photo = url; save(true);
+    const li = cardById(id); li && fillRow(li, cur);
+    if (dockId === id) { renderPhotoRow(cur); sizeDock(); }
+  }
+});
+edDone.addEventListener('click', closeDock);
+edRemove.addEventListener('click', () => { const li = cardById(dockId); closeDock(); if (li) removeCard(li, false); });
+// buttons in the dock shouldn't steal focus from the name field (keeps the keyboard steady)
+editor.addEventListener('pointerdown', e => { if (e.target.closest('button')) e.preventDefault(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!viewer.hidden) closeViewer();
+  else if (dockId) closeDock();
+});
+
+/* ---------------- Removal ---------------- */
+function removeCard(li, swiped) {
+  const id = li.dataset.id;
+  if (dockId === id) closeDock();
+  state.items = state.items.filter(i => i.id !== id);
+  save(true);
+  haptic();
+  li.style.height = li.offsetHeight + 'px';
+  li.getBoundingClientRect();
+  li.classList.add('removing');
+  if (!swiped) li.classList.add('fade');
+  li.style.height = '0px';
+  li.style.paddingBottom = '0px';
+  setTimeout(() => { flip(() => { li.remove(); updateSec(); }); updateMeta(); }, dur(swiped ? 380 : 400));
+  setTimeout(updateMeta, dur(160));
+}
+
+/* ---------------- Gestures: tap, swipe-to-delete, dock swipe-down ---------------- */
+let gesture = null, dockSwipe = null;
+content.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || drag) return;
+  const grip = e.target.closest('.grip');
+  if (grip) { startDrag(e, grip.closest('.card'), grip); return; }
+  if (e.target.closest('.check')) { e.preventDefault(); return; } // click toggles; keep focus where it is
+  const row = e.target.closest('.row');
+  if (!row) return;
+  e.preventDefault(); // don't blur the dock's field (keyboard stays up when switching items)
+  const li = row.closest('.card');
+  gesture = { li, row, x: e.clientX, y: e.clientY, pid: e.pointerId, mode: 'pending', dx: 0, lastX: e.clientX, lastT: performance.now(), v: 0 };
+  gesture.pressTimer = setTimeout(() => { if (gesture && gesture.mode === 'pending') li.classList.add('pressed'); }, 70);
+});
+composer.addEventListener('pointerdown', e => {
+  if (!dockId || e.button !== 0) return;
+  if (!e.target.closest('#grab, #edFoot, #phRow') || e.target.closest('button,input,textarea')) return;
+  dockSwipe = { pid: e.pointerId, y: e.clientY, dy: 0, lastY: e.clientY, lastT: performance.now(), v: 0 };
+  composer.classList.add('swiping');
+  try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+});
+document.addEventListener('pointermove', e => {
+  if (drag && e.pointerId === drag.pid) { drag.lastY = e.clientY; dragMove(); return; }
+  if (dockSwipe && e.pointerId === dockSwipe.pid) {
+    const s = dockSwipe, now = performance.now();
+    let dy = e.clientY - s.y;
+    if (dy < 0) dy = -Math.sqrt(-dy) * 2; // resist upward
+    s.v = (e.clientY - s.lastY) / Math.max(1, now - s.lastT);
+    s.lastY = e.clientY; s.lastT = now; s.dy = dy;
+    composer.style.transform = `translate3d(0,${dy}px,0)`;
+    return;
+  }
+  const g = gesture;
+  if (!g || e.pointerId !== g.pid) return;
+  const dx = e.clientX - g.x, dy = e.clientY - g.y;
+  if (g.mode === 'pending') {
+    if (Math.hypot(dx, dy) <= 8) return;
+    if (Math.abs(dx) > Math.abs(dy) * 1.25 && dx < 0) {
+      g.mode = 'swipe';
+      g.x = e.clientX; // start from here to avoid jump
+      g.li.classList.remove('pressed');
+      g.li.classList.add('swiping');
+      g.inner = $('.card-inner', g.li);
+      g.inner.classList.remove('springback');
+      g.w = g.li.offsetWidth;
+      try { g.row.setPointerCapture(e.pointerId); } catch (_) {}
+    } else {
+      g.li.classList.remove('pressed');
+      clearTimeout(g.pressTimer);
+      gesture = null; // let native scroll take over
+    }
+    return;
+  }
+  if (g.mode === 'swipe') {
+    e.preventDefault();
+    let d = e.clientX - g.x;
+    if (d > 0) d = d * .2; // resist rightward
+    const now = performance.now();
+    g.v = (e.clientX - g.lastX) / Math.max(1, now - g.lastT);
+    g.lastX = e.clientX; g.lastT = now;
+    g.dx = d;
+    g.inner.style.transform = `translate3d(${d}px,0,0)`;
+    const armed = -d > g.w * .42;
+    if (armed !== g.li.classList.contains('armed')) { g.li.classList.toggle('armed', armed); if (armed) haptic(); }
+  }
+}, { passive: false });
+function endGesture(e, cancelled) {
+  if (drag && e.pointerId === drag.pid) { endDrag(); return; }
+  if (dockSwipe && e.pointerId === dockSwipe.pid) {
+    const s = dockSwipe; dockSwipe = null;
+    composer.classList.remove('swiping');
+    composer.style.transform = '';
+    if (!cancelled && (s.dy > 70 || (s.v > .5 && s.dy > 20))) closeDock();
+    else if (Math.abs(s.dy) < 4) maybeOutsideTap(e, cancelled);
+    return;
+  }
+  const g = gesture;
+  if (!g || e.pointerId !== g.pid) { maybeOutsideTap(e, cancelled); return; }
+  gesture = null;
+  clearTimeout(g.pressTimer);
+  g.li.classList.remove('pressed');
+  if (g.mode === 'pending') {
+    if (!cancelled) { tapSuppress = true; openDock(g.li); }
+    return;
+  }
+  if (g.mode === 'swipe') {
+    const commit = !cancelled && (-g.dx > g.w * .42 || (g.v < -.6 && -g.dx > 50));
+    if (commit) {
+      g.inner.classList.add('flyout');
+      g.inner.style.transform = `translate3d(${-g.w - 20}px,0,0)`;
+      setTimeout(() => removeCard(g.li, true), dur(200));
+    } else {
+      g.inner.classList.add('springback');
+      g.inner.style.transform = '';
+      g.li.classList.remove('armed');
+      setTimeout(() => { g.li.classList.remove('swiping'); g.inner.classList.remove('springback'); }, dur(450));
+    }
+  }
+}
+document.addEventListener('pointerup', e => endGesture(e, false));
+document.addEventListener('pointercancel', e => endGesture(e, true));
+content.addEventListener('keydown', e => {
+  const t = e.target;
+  if (t.classList && t.classList.contains('text') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDock(t.closest('.card')); }
+});
+
+// tap outside the dock (and not on a card) closes it
+let outside = null, tapSuppress = false;
+document.addEventListener('pointerdown', e => { outside = { x: e.clientX, y: e.clientY, target: e.target }; tapSuppress = false; }, true);
+function maybeOutsideTap(e, cancelled) {
+  const o = outside; outside = null;
+  if (!o || cancelled || tapSuppress || !dockId) return;
+  if (Math.hypot(e.clientX - o.x, e.clientY - o.y) > 10) return;
+  const t = o.target;
+  if (composer.contains(t) || viewer.contains(t) || fileInput === t) return;
+  if (t.closest && t.closest('.row')) return;
+  closeDock();
+}
+
+/* ---------------- Reorder (grip, pointer events, confined to its block) ---------------- */
+let drag = null;
+function startDrag(e, li, grip) {
+  e.preventDefault();
+  // a pending check/uncheck move must land first so blocks are accurate
+  if (reflowTimer) { reflow(); return; }
+  if (dockId) closeDock();
+  const ul = li.parentNode;
+  const cards = liveCards(ul);
+  const i = cards.indexOf(li);
+  if (i < 0) return;
+  const metrics = cards.map(c => ({ top: c.offsetTop, h: c.offsetHeight }));
+  drag = { li, ul, i, target: i, cards, metrics, startY: e.clientY, lastY: e.clientY, startScroll: scroller.scrollTop, pid: e.pointerId, raf: 0 };
+  try { grip.setPointerCapture(e.pointerId); } catch (_) {}
+  li.classList.add('dragging');
+  cards.forEach(c => { if (c !== li) c.classList.add('shift'); });
+  haptic();
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+function dragMove() {
+  const d = drag, m = d.metrics, self = m[d.i];
+  let dy = d.lastY - d.startY + (scroller.scrollTop - d.startScroll);
+  const minDy = m[0].top - self.top, last = m[m.length - 1];
+  const maxDy = last.top + last.h - self.h - self.top;
+  if (dy < minDy) dy = minDy - Math.sqrt(minDy - dy) * 2;
+  if (dy > maxDy) dy = maxDy + Math.sqrt(dy - maxDy) * 2;
+  d.li.style.transform = `translate3d(0,${dy}px,0)`;
+  const center = self.top + dy + self.h / 2;
+  let t = d.i;
+  for (let j = d.i + 1; j < m.length; j++) if (center > m[j].top + m[j].h / 2) t = j;
+  for (let j = d.i - 1; j >= 0; j--) if (center < m[j].top + m[j].h / 2) t = j;
+  if (t !== d.target) {
+    d.target = t;
+    haptic();
+    d.cards.forEach((c, j) => {
+      if (j === d.i) return;
+      let s = 0;
+      if (t > d.i && j > d.i && j <= t) s = -self.h;
+      else if (t < d.i && j < d.i && j >= t) s = self.h;
+      c.style.transform = s ? `translate3d(0,${s}px,0)` : '';
+    });
+  }
+}
+function autoScroll() {
+  if (!drag) return;
+  const sr = scroller.getBoundingClientRect();
+  const topEdge = sr.top + topInset() + 70;
+  const botEdge = sr.top + composerTop() - 50;
+  const y = drag.lastY;
+  let v = 0;
+  if (y < topEdge) v = -Math.min(1, (topEdge - y) / 90);
+  else if (y > botEdge) v = Math.min(1, (y - botEdge) / 90);
+  if (v) {
+    const before = scroller.scrollTop;
+    scroller.scrollTop += v * v * Math.sign(v) * 16 + Math.sign(v) * 2;
+    if (scroller.scrollTop !== before) dragMove();
+  }
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+// Move `id` in the one array so it sits right before its new block successor
+// (or right after its block predecessor if it is now last in the block).
+function applyBlockMove(id, blockIds) {
+  const k = blockIds.indexOf(id);
+  const from = state.items.findIndex(i => i.id === id);
+  if (k < 0 || from < 0) return;
+  const [moved] = state.items.splice(from, 1);
+  let at = state.items.length;
+  if (k < blockIds.length - 1) at = state.items.findIndex(i => i.id === blockIds[k + 1]);
+  else if (k > 0) at = state.items.findIndex(i => i.id === blockIds[k - 1]) + 1;
+  state.items.splice(at < 0 ? state.items.length : at, 0, moved);
+}
+function endDrag() {
+  const d = drag; drag = null;
+  cancelAnimationFrame(d.raf);
+  const m = d.metrics, self = m[d.i];
+  let final = 0;
+  if (d.target > d.i) final = m[d.target].top + m[d.target].h - self.h - self.top;
+  else if (d.target < d.i) final = m[d.target].top - self.top;
+  d.li.classList.add('settling');
+  d.li.classList.remove('dragging');
+  d.li.style.transform = `translate3d(0,${final}px,0)`;
+  setTimeout(() => {
+    if (d.target !== d.i) {
+      const ids = d.cards.map(c => c.dataset.id);
+      const [mv] = ids.splice(d.i, 1);
+      ids.splice(d.target, 0, mv);
+      applyBlockMove(mv, ids);
+      save(true);
+    }
+    d.ul.classList.add('no-anim');
+    d.cards.forEach(c => { c.classList.remove('shift', 'settling'); c.style.transform = ''; });
+    const ref = d.cards.filter(c => c !== d.li)[d.target] || null;
+    d.ul.insertBefore(d.li, ref);
+    d.ul.getBoundingClientRect();
+    d.ul.classList.remove('no-anim');
+  }, dur(320));
+}
+// block page scroll while dragging (iOS)
+document.addEventListener('touchmove', e => { if (drag || dockSwipe || (gesture && gesture.mode === 'swipe')) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (!e.target.closest('input,textarea')) e.preventDefault(); });
+
+/* ---------------- Boot ---------------- */
+fitFrame();
+render();
+updateComposer();
+layoutPad();
+requestAnimationFrame(layoutPad);
+framedMQ.addEventListener && framedMQ.addEventListener('change', () => { fitFrame(); onViewport(); layoutPad(); });
+})();
+</script>
+</body>
+</html>

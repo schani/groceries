@@ -1,0 +1,32 @@
+{
+  "name": "app",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "fling dev",
+    "start": "fling dev",
+    "build": "tsc -p tsconfig.app.json && tsc -p tsconfig.worker.json && vite build",
+    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.worker.json",
+    "test": "vitest run",
+    "icons": "node scripts/icons.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "flingit": "^0.0.71",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.1.0"
+  },
+  "fling": {
+    "projectName": "q4uskc"
+  }
+}
