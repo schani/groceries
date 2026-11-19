@@ -88,8 +88,10 @@ svg{display:block}
 /* ---------- App column ---------- */
 #root{height:100%}
 .app{position:fixed;inset:0;margin:0 auto;max-width:430px;overflow:hidden;background:var(--bg)}
-/* iOS home-screen apps can report a layout viewport shorter than the screen; 100vh is the full screen there */
-@media (display-mode:standalone){.app{bottom:auto;height:100vh}}
+/* iOS 26 home-screen apps get a layout viewport short by the top inset; a root document that tall
+   makes WebKit extend it. Capped at 100lvh so it is a no-op where the viewport is already full height. */
+@media (display-mode:standalone){html{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}}
+html.standalone{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}
 @media (min-width:431px){
   html,body{background:#E4E4E9}
   .app{box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 12px 48px rgba(0,0,0,.10)}
@@ -97,6 +99,12 @@ svg{display:block}
 @media (min-width:431px) and (prefers-color-scheme:dark){
   html,body{background:#0E0E10}
   .app{box-shadow:0 0 0 .5px rgba(255,255,255,.08),0 12px 48px rgba(0,0,0,.6)}
+}
+/* phones and tablets: fill the screen in any orientation; only the content is inset */
+@media (hover:none) and (pointer:coarse){
+  :root{--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
+  html,body{background:var(--bg)}
+  .app{max-width:none;box-shadow:none}
 }
 
 /* ---------- Scroll area ---------- */
@@ -253,7 +261,7 @@ svg{display:block}
 .group.fanning .cell{border-radius:12px}
 .pile{
   --peek:13px;position:relative;display:block;width:100%;margin-top:20px;padding-bottom:var(--peek);text-align:left;
-  transition:padding .35s var(--ease);
+  transition:padding .35s var(--ease);container-type:inline-size;
 }
 .stack[data-n="1"] .pile{--peek:0px}
 .pile-layer{
@@ -262,6 +270,11 @@ svg{display:block}
 }
 .pile .l1{background:var(--layer1);transform:translateY(7px) scale(.95)}
 .pile .l2{background:var(--layer2);transform:translateY(13px) scale(.9)}
+/* past 400px the layers stop narrowing with the width so the peeking edges keep their size */
+@container (min-width:401px){
+  .pile .l1{left:10px;right:10px;transform:translateY(7px) scaleY(.95)}
+  .pile .l2{left:20px;right:20px;transform:translateY(13px) scaleY(.9)}
+}
 .stack[data-n="1"] .pile-layer{opacity:0;transform:none}
 .pile-front{
   position:relative;display:flex;align-items:center;min-height:58px;padding-left:16px;border-radius:12px;
@@ -304,7 +317,7 @@ svg{display:block}
   padding:9px 10px 10px;font-size:16px;line-height:21px;letter-spacing:-.3px;resize:none;min-height:40px;overflow:hidden;
 }
 .f-desc::placeholder{color:var(--placeholder)}
-.photo{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:var(--fill)}
+.photo{position:relative;max-width:340px;margin-top:10px;border-radius:12px;overflow:hidden;background:var(--fill)}
 .photo img{display:block;width:100%;height:210px;object-fit:cover;pointer-events:none}
 .photo-actions{position:absolute;right:8px;bottom:8px;display:flex;gap:8px}
 .pill{

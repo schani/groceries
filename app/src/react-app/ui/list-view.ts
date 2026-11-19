@@ -243,7 +243,7 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
       if (Math.abs(dx) > Math.abs(dy) * 1.2 && (dx < 0 || g.base < 0)) {
         g.mode = "swipe";
         g.x = e.clientX; // start from here to avoid a jump
-        g.w = g.li.offsetWidth;
+        g.w = Math.min(g.li.offsetWidth, 420); // full-swipe distance stays phone-sized on wide rows
         if (c.revealed && c.revealed !== g.li) c.closeReveal();
         g.li.classList.remove("snap", "fly");
         try { g.row.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }

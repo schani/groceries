@@ -1,6 +1,9 @@
 import type { Ctx } from "./context";
 import { EASE, SPRING_HI } from "./motion";
 
+// the pile's i-th layer: 5% smaller per step, but no more than 10px a side once rows are wider than 400px
+const layerScale = (i: number, w: number) => `scale(${1 - i * Math.min(0.05, 20 / w)},${1 - i * 0.05})`;
+
 /** Batched check/uncheck reflow and the collapsible "Checked" stack. */
 export function installStack(c: Ctx): void {
   const { app, scroller, g0, g1, stack, stackHead, pile, pileFront, pileSub, pileCount, lessBtn } = c.el;
@@ -141,7 +144,7 @@ export function installStack(c: Ctx): void {
       const dy = pr.top + i * 7 - r.top;
       cell.style.zIndex = String(cells.length - j);
       const a = cell.animate([
-        { transform: `translate3d(0,${dy}px,0) scale(${1 - i * 0.05})`, opacity: j < 3 ? 1 : 0 },
+        { transform: `translate3d(0,${dy}px,0) ${layerScale(i, r.width)}`, opacity: j < 3 ? 1 : 0 },
         { transform: "none", opacity: 1 },
       ], { duration: 640, delay: Math.min(j, 8) * 26, easing: SPRING_HI, fill: "backwards" });
       a.onfinish = a.oncancel = () => { cell.style.zIndex = ""; };
@@ -172,7 +175,7 @@ export function installStack(c: Ctx): void {
       const dy = pr.top + i * 7 - r.top;
       const a = g.animate([
         { transform: "none", opacity: 1 },
-        { transform: `translate3d(0,${dy}px,0) scale(${1 - i * 0.05})`, opacity: 0 },
+        { transform: `translate3d(0,${dy}px,0) ${layerScale(i, r.width)}`, opacity: 0 },
       ], { duration: 420, easing: EASE, fill: "both" });
       a.onfinish = a.oncancel = () => g.remove();
     });
