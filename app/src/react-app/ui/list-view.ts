@@ -67,35 +67,45 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
   };
 
   /* ---------------- Layout: composer, keyboard, padding ---------------- */
-  c.topInset = () => topfade.offsetHeight - 8;
+  c.topInset = () => Math.max(topfade.offsetHeight - 8, window.visualViewport?.offsetTop ?? 0);
   c.composerTop = () => { // y within scroller viewport where composer begins
     const r = composer.getBoundingClientRect(), s = scroller.getBoundingClientRect();
     return app.classList.contains("editing") ? s.height - c.kb : r.top - s.top;
   };
   c.atBottom = () => scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop < 24;
   c.scrollToBottom = () => { scroller.scrollTop = scroller.scrollHeight; };
-  c.layoutPad = () => {
+  c.layoutPad = (stick = c.atBottom()) => {
     const editing = app.classList.contains("editing");
-    const stick = c.atBottom();
     // layout position, so the composer's slide-away transform doesn't count
     const pad = editing ? c.kb + 24 : Math.max(0, scroller.clientHeight - composer.offsetTop) + 16;
     content.style.setProperty("--pad-bottom", pad + "px");
     if (stick) c.scrollToBottom();
   };
+  // whether the list was scrolled to the bottom before the viewport last changed size
+  let pinned = true;
+  scroller.addEventListener("scroll", () => { pinned = c.atBottom(); }, { passive: true, signal });
+  let lastW = window.innerWidth, lastSize = "";
+  const scrollerSize = () => scroller.clientWidth + "x" + scroller.clientHeight;
   function onViewport() {
     const vv = window.visualViewport;
-    let kb = !vv ? 0 : Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
-    if (kb < 60) kb = 0;
+    // open: the visual viewport lost height to something; how much of the app it covers is measured
+    // from the app's own bottom, which in an iOS home-screen app can lie below innerHeight
+    const open = !!vv && window.innerHeight - vv.height - vv.offsetTop >= 60;
+    const kb = open ? Math.max(0, Math.round(app.getBoundingClientRect().bottom - vv!.offsetTop - vv!.height)) : 0;
     c.kb = kb;
     app.style.setProperty("--kb", kb + "px");
     app.classList.toggle("kb-open", kb > 0);
+    // rotation: a finger still down would act on stale geometry
+    if (window.innerWidth !== lastW) { lastW = window.innerWidth; cancelPointers(); }
+    const resized = scrollerSize() !== lastSize;
+    lastSize = scrollerSize();
     setTimeout(() => {
       c.layoutPad();
       const a = document.activeElement;
-      const cell = a && a.closest(".cell");
+      const cell = (a && a.closest(".cell")) || (resized && c.cellById(c.openId));
       if (cell) c.ensureVisible(cell, 12);
     }, c.dur(320));
-    c.layoutPad();
+    c.layoutPad(resized ? pinned : undefined);
   }
   if (window.visualViewport) {
     visualViewport!.addEventListener("resize", onViewport, { signal });
@@ -290,6 +300,11 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
       else { if (c.revealed === g.li) c.revealed = null; c.setSlide(g.li, 0, "snap"); }
     }
   }
+  function cancelPointers() {
+    for (const pid of [c.drag?.pid, c.gesture?.pid, c.dismiss?.pid]) {
+      if (pid != null) endPointer({ pointerId: pid, clientX: 0, clientY: 0 } as PointerEvent, true);
+    }
+  }
   document.addEventListener("pointerup", (e) => endPointer(e, false), { signal });
   document.addEventListener("pointercancel", (e) => endPointer(e, true), { signal });
 
@@ -394,6 +409,7 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
   const unsubscribe = store.subscribe(onStore);
 
   /* ---------------- Boot ---------------- */
+  lastSize = scrollerSize();
   if (store.loaded) render();
   c.layoutPad();
   requestAnimationFrame(() => { c.layoutPad(); c.scrollToBottom(); });

@@ -202,6 +202,9 @@ export function installEditor(c: Ctx): () => void {
     }, 0);
   }, { signal: c.signal });
 
+  // a rotated row is wider or narrower, so the description wraps differently
+  window.addEventListener("resize", () => app.querySelectorAll<HTMLTextAreaElement>(".f-desc").forEach(grow), { signal: c.signal });
+
   return () => {
     if (draft) clearTimeout(draft.timer);
     draft = null;

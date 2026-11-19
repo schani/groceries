@@ -7,6 +7,7 @@
   --label2:rgba(60,60,67,.6);
   --label3:rgba(60,60,67,.3);
   --placeholder:rgba(60,60,67,.42);
+  --label-done:#6C6C70;
   --sep:rgba(60,60,67,.29);
   --fill:rgba(118,118,128,.12);
   --fill-strong:rgba(118,118,128,.2);
@@ -27,8 +28,9 @@
   --hair:1px;
   --sat:env(safe-area-inset-top,0px);
   --sab:env(safe-area-inset-bottom,0px);
-  --sal:env(safe-area-inset-left,0px);
-  --sar:env(safe-area-inset-right,0px);
+  /* side insets as seen by the centred column, which stays clear of them once the screen is wider than it */
+  --sal:max(0px,env(safe-area-inset-left,0px) - max(0px,(100vw - 430px) / 2));
+  --sar:max(0px,env(safe-area-inset-right,0px) - max(0px,(100vw - 430px) / 2));
   --kb:0px;
   --spring:cubic-bezier(.34,1.36,.64,1);
   --spring-soft:cubic-bezier(.3,1.18,.5,1);
@@ -46,6 +48,7 @@
     --label2:rgba(235,235,245,.6);
     --label3:rgba(235,235,245,.3);
     --placeholder:rgba(235,235,245,.4);
+    --label-done:#98989D;
     --sep:rgba(84,84,88,.65);
     --fill:rgba(118,118,128,.24);
     --fill-strong:rgba(118,118,128,.32);
@@ -85,6 +88,8 @@ svg{display:block}
 /* ---------- App column ---------- */
 #root{height:100%}
 .app{position:fixed;inset:0;margin:0 auto;max-width:430px;overflow:hidden;background:var(--bg)}
+/* iOS home-screen apps can report a layout viewport shorter than the screen; 100vh is the full screen there */
+@media (display-mode:standalone){.app{bottom:auto;height:100vh}}
 @media (min-width:431px){
   html,body{background:#E4E4E9}
   .app{box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 12px 48px rgba(0,0,0,.10)}
@@ -184,14 +189,13 @@ svg{display:block}
 .name{
   font-size:17px;line-height:22px;letter-spacing:-.41px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   color:var(--label);transition:color .25s var(--ease);
-  text-decoration-line:line-through;text-decoration-color:transparent;text-decoration-thickness:1.5px;
 }
-.cell.checked .name{color:var(--placeholder);text-decoration-color:var(--placeholder)}
+.cell.checked .name{color:var(--label-done)}
 .desc{
   font-size:14px;line-height:18px;color:var(--label2);letter-spacing:-.15px;margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .25s var(--ease);
 }
-.cell.checked .desc{color:var(--label3)}
+.cell.checked .desc{color:var(--label-done)}
 .cell:not(.has-desc) .desc{display:none}
 
 .thumb{
@@ -328,7 +332,7 @@ svg{display:block}
 .viewer[hidden]{display:none}
 .viewer.on{background:rgba(0,0,0,.94)}
 .viewer img{
-  position:absolute;inset:0;margin:auto;max-width:100%;max-height:calc(100% - var(--sat) - var(--sab) - 40px);
+  position:absolute;inset:0 var(--sar) 0 var(--sal);margin:auto;max-width:calc(100% - var(--sal) - var(--sar));max-height:calc(100% - var(--sat) - var(--sab) - 40px);
   display:block;transform-origin:0 0;pointer-events:none;
 }
 .viewer img.anim{transition:transform .42s var(--spring-soft),opacity .25s var(--ease),border-radius .42s var(--ease)}

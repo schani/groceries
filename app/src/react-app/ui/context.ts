@@ -67,7 +67,7 @@ export interface Ctx {
   composerTop(): number;
   atBottom(): boolean;
   scrollToBottom(): void;
-  layoutPad(): void;
+  layoutPad(stick?: boolean): void;
   ensureVisible(el: Element, margin?: number, smooth?: boolean): void;
   removeCell(li: HTMLElement, swiped: boolean): void;
   removeCellDom(li: HTMLElement, swiped: boolean): void;
