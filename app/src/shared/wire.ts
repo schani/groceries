@@ -55,7 +55,6 @@ export const LIMITS = {
   opsPerRequest: 200,
   photoBytes: 2 * 1024 * 1024,
   opsBodyBytes: 256 * 1024,
-  diagBodyBytes: 4 * 1024,
 } as const;
 
 export const ID_RE = /^[A-Za-z0-9_-]{8,40}$/;

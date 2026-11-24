@@ -45,12 +45,4 @@ export async function putPhoto(key: string, jpeg: Blob): Promise<void> {
   });
 }
 
-export async function postDiag(report: Record<string, unknown>): Promise<void> {
-  await request("/api/diag", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(report),
-  });
-}
-
 export const photoUrl = (key: string): string => `/api/photos/${encodeURIComponent(key)}`;

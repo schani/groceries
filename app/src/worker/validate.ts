@@ -107,12 +107,6 @@ export function parseOpsRequest(body: unknown): Op[] {
   return body.ops.map(op);
 }
 
-/** A diagnostics report: any JSON object. */
-export function parseDiagReport(body: unknown): Record<string, unknown> {
-  if (!isObj(body)) fail("body must be an object");
-  return body;
-}
-
 export function parseSince(v: string | undefined): number | undefined {
   if (v === undefined || v === "") return undefined;
   if (!/^\d{1,15}$/.test(v)) fail("since must be a non-negative integer");

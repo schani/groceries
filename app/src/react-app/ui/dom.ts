@@ -21,6 +21,9 @@ const MARKUP = `
         <p id="emptyText">Add what you need below.</p>
       </div>
     </div>
+    <div class="share-head" id="shareHead" hidden>
+      <button class="share" id="share"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V1.6M5 4.4 8 1.4l3 3"/><path d="M5.6 6.4H4.4A1.4 1.4 0 0 0 3 7.8v5.8A1.4 1.4 0 0 0 4.4 15h7.2a1.4 1.4 0 0 0 1.4-1.4V7.8a1.4 1.4 0 0 0-1.4-1.4h-1.2"/></svg><span>Share</span></button>
+    </div>
     <ul class="group" id="g0" aria-label="To buy"></ul>
     <section class="stack" id="stack" data-n="0" hidden aria-label="Checked items">
       <div class="stack-head" id="stackHead">
@@ -61,6 +64,7 @@ const MARKUP = `
   </div>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="toast-ico" aria-hidden="true">${ICON.check}</span><span id="toastText"></span></div>
 <div class="viewer" id="viewer" hidden role="dialog" aria-label="Photo"><img id="viewerImg" alt=""></div>
 <input class="file" id="file" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
 `;
@@ -81,6 +85,10 @@ export function buildDom(container: HTMLElement) {
     emptyTitle: q("#emptyTitle"),
     emptyText: q("#emptyText"),
     topfade: q(".topfade"),
+    shareHead: q("#shareHead"),
+    shareBtn: q("#share"),
+    toast: q("#toast"),
+    toastText: q("#toastText"),
     stack: q("#stack"),
     stackHead: q("#stackHead"),
     lessBtn: q("#less"),

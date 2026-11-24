@@ -1,17 +1,13 @@
 import { app, cron } from "flingit";
 import { LIMITS } from "../shared/wire.js";
-import { diagRepo, registerDiagMigrations } from "./diag-repo.js";
-import { createDiagService } from "./diag-service.js";
 import { listRepo, registerMigrations } from "./list-repo.js";
 import { createListService } from "./list-service.js";
 import { photoStore } from "./photo-store.js";
-import { HttpProblem, ValidationError, isId, parseDiagReport, parseOpsRequest, parseSince, readBody } from "./validate.js";
+import { HttpProblem, ValidationError, isId, parseOpsRequest, parseSince, readBody } from "./validate.js";
 
 registerMigrations();
-registerDiagMigrations();
 
 const service = createListService(listRepo, photoStore);
-const diag = createDiagService(diagRepo);
 const NO_STORE = { "Cache-Control": "no-store" };
 
 app.onError((err, c) => {
@@ -35,19 +31,6 @@ app.post("/api/ops", async (c) => {
   }
   const ops = parseOpsRequest(body);
   return c.json(await service.apply(ops), 200, NO_STORE);
-});
-
-// temporary: device measurements from the installed app, read back with the CLI's SQL command
-app.post("/api/diag", async (c) => {
-  const bytes = await readBody(c.req.raw, LIMITS.diagBodyBytes, false);
-  let body: unknown;
-  try {
-    body = JSON.parse(new TextDecoder().decode(bytes));
-  } catch {
-    throw new ValidationError("body must be JSON");
-  }
-  await diag.record(parseDiagReport(body));
-  return c.json({ ok: true }, 200, NO_STORE);
 });
 
 app.put("/api/photos/:key", async (c) => {

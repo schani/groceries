@@ -6,10 +6,10 @@ export const EASE = "cubic-bezier(.32,.72,0,1)";
 type Flippable = HTMLElement & { _flipT?: number };
 
 export function installMotion(c: Ctx): void {
-  const { stackHead, pile, emptyEl, content } = c.el;
+  const { shareHead, stackHead, pile, emptyEl, content } = c.el;
 
   c.flipAll = (mutate, movers) => {
-    const els: Flippable[] = [...c.allCells(), stackHead, pile, emptyEl];
+    const els: Flippable[] = [...c.allCells(), shareHead, stackHead, pile, emptyEl];
     const before = new Map<Flippable, number>();
     for (const e of els) {
       const r = e.getBoundingClientRect();
@@ -39,6 +39,7 @@ export function installMotion(c: Ctx): void {
   stackHead.style.transition = "transform .52s var(--spring-soft)";
   pile.style.transition = "transform .52s var(--spring-soft),padding .35s var(--ease)";
   emptyEl.style.transition = "transform .52s var(--spring-soft)";
+  shareHead.style.transition = "transform .52s var(--spring-soft)";
 
   // absolutely positioned clone of el at viewport rect r, for flights out of hidden blocks
   c.ghostOf = (el, r) => {

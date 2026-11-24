@@ -4,8 +4,6 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
     base: process.env["VITE_BASE"] || "/",
-    // temporary: identifies the build in diagnostics reports
-    define: { __BUILD_ID__: JSON.stringify(new Date().toISOString()) },
     plugins: [
         react(),
         VitePWA({

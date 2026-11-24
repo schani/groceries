@@ -245,18 +245,21 @@ html.standalone{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))
 @keyframes rowIn{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
+.share-head{display:flex;justify-content:flex-end;padding-bottom:8px}
+.share-head[hidden]{display:none}
+
 /* ---------- Checked stack ---------- */
 .stack{position:relative;z-index:7}
 .stack[hidden]{display:none}
 .stack-head{display:none;justify-content:flex-end;padding:16px 0 8px}
 .stack.fanned .stack-head{display:flex}
-.less{
+.less,.share{
   position:relative;height:28px;padding:0 12px 0 9px;border-radius:14px;display:flex;align-items:center;gap:4px;
   background:var(--fill);color:var(--accent);font-size:14px;font-weight:600;letter-spacing:-.15px;
   transition:transform .25s var(--spring),background-color .15s;
 }
-.less::before{content:"";position:absolute;inset:-8px -4px}
-.less:active{transform:scale(.94);background:var(--fill-strong)}
+.less::before,.share::before{content:"";position:absolute;inset:-8px -4px}
+.less:active,.share:active{transform:scale(.94);background:var(--fill-strong)}
 .stack:not(.fanned) .group,.stack.fanned .pile{display:none}
 .group.fanning .cell{border-radius:12px}
 .pile{
@@ -350,6 +353,22 @@ html.standalone{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))
 }
 .viewer img.anim{transition:transform .42s var(--spring-soft),opacity .25s var(--ease),border-radius .42s var(--ease)}
 
+
+/* ---------- Toast ---------- */
+.toast{
+  position:absolute;left:50%;z-index:60;bottom:calc(max(calc(var(--sab) - 8px),12px) + 62px);
+  display:flex;align-items:center;gap:9px;height:43px;padding:0 17px 0 10px;border-radius:22px;white-space:nowrap;
+  background:var(--card);box-shadow:inset 0 0 0 .5px var(--glass-edge),var(--glass-shadow);
+  font-size:15px;font-weight:600;letter-spacing:-.24px;pointer-events:none;
+  opacity:0;visibility:hidden;transform:translate(-50%,8px) scale(.96);
+  transition:opacity .25s var(--ease),transform .3s var(--ease),visibility 0s .3s;
+}
+.toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s var(--ease),transform .4s var(--spring-soft)}
+.app.kb-open .toast{bottom:calc(var(--kb) + 70px)}
+.toast-ico{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center}
+.toast.fail .toast-ico{display:none}
+.toast.fail{padding-left:17px}
+@media (prefers-color-scheme:dark){.toast{background:#2C2C2E}}
 
 /* ---------- Composer ---------- */
 .composer{

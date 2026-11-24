@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HttpProblem, ValidationError, parseDiagReport, parseOpsRequest, parseSince, readBody } from "./validate.js";
+import { HttpProblem, ValidationError, parseOpsRequest, parseSince, readBody } from "./validate.js";
 
 const bad = (body: unknown) => expect(() => parseOpsRequest(body)).toThrow(ValidationError);
 
@@ -66,16 +66,5 @@ describe("readBody", () => {
 
   it("stops reading once the cap is exceeded", async () => {
     expect(await status(readBody(req(stream(50)), 5000, false))).toBe(413);
-  });
-});
-
-describe("parseDiagReport", () => {
-  it("accepts a JSON object as is", () => {
-    const r = { build: "x", innerHeight: 812, vv: { scale: 1 } };
-    expect(parseDiagReport(r)).toBe(r);
-  });
-
-  it("rejects anything else", () => {
-    for (const v of [null, [], "x", 3, true]) expect(() => parseDiagReport(v)).toThrow(ValidationError);
   });
 });

@@ -7,6 +7,7 @@ import { installDrag } from "./drag";
 import { installEditor } from "./editor";
 import { installMotion } from "./motion";
 import { cellEl, fillRow, shapeGroup } from "./rows";
+import { installShare } from "./share";
 import { installStack } from "./stack";
 import { REV, installSwipe } from "./swipe";
 import { installViewer } from "./viewer";
@@ -20,14 +21,14 @@ export interface ListView {
 
 export function mountListView(container: HTMLElement, store: ListStore): ListView {
   const el = buildDom(container);
-  const { app, scroller, content, g0, g1, emptyEl, emptyTitle, emptyText, topfade, stack, composer, viewer, input } = el;
+  const { app, scroller, content, g0, g1, emptyEl, emptyTitle, emptyText, topfade, shareHead, stack, composer, viewer, input } = el;
   const ac = new AbortController();
   const signal = ac.signal;
   const reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
 
   const c = {
     el, store, signal,
-    openId: null, revealed: null, gesture: null, drag: null, settling: false,
+    openId: null, revealed: null, gesture: null, drag: null, settling: false, sharing: false,
     swallow: null, dismiss: null, fanned: false, kb: 0, reflowTimer: 0, landing: new Set(),
   } as unknown as Ctx;
 
@@ -59,6 +60,7 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
     c.updatePile();
     const noOpen = c.live(g0).length === 0;
     emptyEl.hidden = !rendered || !noOpen;
+    shareHead.hidden = noOpen;
     if (noOpen) {
       const none = store.items().length === 0;
       emptyTitle.textContent = none ? "Nothing to buy" : "All done";
@@ -184,6 +186,7 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
   installDrag(c);
   installViewer(c);
   const disposeComposer = installComposer(c);
+  const disposeShare = installShare(c);
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { c.closeViewer(); c.closeReveal(); if (c.openId) c.collapse(c.cellById(c.openId)); }
@@ -420,7 +423,7 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
       const field = !!a && (a.matches("input,textarea") || a.isContentEditable);
       // composer text and editor fields live only in the DOM until submitted / committed
       if (input.value.trim() || composer.classList.contains("has-photo") || (field && a!.closest(".cell"))) return "unsaved";
-      if (field || c.gesture || c.drag || c.settling || c.openId || !viewer.hidden) return "interacting";
+      if (field || c.gesture || c.drag || c.settling || c.openId || c.sharing || !viewer.hidden) return "interacting";
       return "idle";
     },
     destroy() {
@@ -430,6 +433,7 @@ export function mountListView(container: HTMLElement, store: ListStore): ListVie
       clearTimeout(c.reflowTimer);
       disposeEditor();
       disposeComposer();
+      disposeShare();
       app.remove();
     },
   };

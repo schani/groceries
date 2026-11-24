@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Groceries — Share as Markdown</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f2f2f7; --card:#fff; --fg:#000; --sub:#6b6b70; --code:#fff; --accent:#1E9E55; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#000; --card:#1c1c1e; --fg:#fff; --sub:#98989f; --code:#1c1c1e; --accent:#34D07A; } }
+  body { margin:0; padding:24px 16px 48px; background:var(--bg); color:var(--fg);
+    font:17px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+  h1 { font-size:34px; margin:16px auto 8px; padding:0 4px; letter-spacing:-.5px; max-width:1240px; }
+  h2 { font-size:22px; margin:36px auto 4px; padding:0 4px; letter-spacing:-.3px; max-width:1240px; }
+  p.lead, p.note { max-width:1240px; margin:0 auto 16px; padding:0 4px; color:var(--sub); font-size:15px; }
+  pre { max-width:1240px; margin:0 auto 8px; box-sizing:border-box; background:var(--code); border-radius:16px; padding:14px 18px;
+    font:14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; overflow-x:auto; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); max-width:1240px; margin:0 auto; }
+  a { display:block; background:var(--card); border-radius:22px; overflow:hidden; color:inherit; text-decoration:none; }
+  img { display:block; width:100%; aspect-ratio:390/844; object-fit:cover; object-position:top; }
+  .t { padding:12px 16px 16px; }
+  b { display:block; }
+  span { color:var(--sub); font-size:15px; }
+  .rec b::after { content:" · recommended"; color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+<h1>Share — copy the list as Markdown</h1>
+<p class="lead">Three placements (A/B/C) × two tap behaviours (1 · iOS share sheet, 2 · instant copy). Unchecked items only, in list order, no heading. The button is hidden (A, B) or not rendered (C) when nothing is unchecked. The share sheet is a static mock of the iOS 26 sheet, because headless Chromium can't open the real one.</p>
+<pre>- [ ] Salad greens - romaine mix?
+- [ ] Eggs
+- [ ] Whole milk
+- [ ] Sourdough bread
+- [ ] Bananas
+- [ ] Greek yogurt
+- [ ] Coffee beans</pre>
+
+<h2>A · Composer button</h2>
+<p class="note">A round glass button to the right of the capsule, mirroring the camera button. It collapses away while you type.</p>
+<div class="grid">
+  <a href="a-idle.png"><img src="a-idle.png" alt=""><div class="t"><b>A · Idle</b><span>Share button to the right of the capsule, same size as the camera.</span></div></a>
+  <a href="a-typing.png"><img src="a-typing.png" alt=""><div class="t"><b>A · Typing</b><span>The button collapses while typing, so the capsule takes the full width.</span></div></a>
+  <a href="a-1-sheet.png"><img src="a-1-sheet.png" alt=""><div class="t"><b>A · 1 Share sheet</b><span>Tap opens the iOS share sheet: Copy, Messages, Notes, and more.</span></div></a>
+  <a href="a-2-toast.png"><img src="a-2-toast.png" alt=""><div class="t"><b>A · 2 Instant copy</b><span>Tap copies right away and shows a toast above the composer for 1.5 s.</span></div></a>
+</div>
+
+<h2>B · Inside the field</h2>
+<p class="note">A grey share icon at the trailing end of the empty capsule. When you type, the green send arrow replaces it. Takes no extra width.</p>
+<div class="grid">
+  <a class="rec" href="b-idle.png"><img src="b-idle.png" alt=""><div class="t"><b>B · Idle</b><span>Grey share icon where the send arrow goes. The capsule keeps its full width.</span></div></a>
+  <a href="b-typing.png"><img src="b-typing.png" alt=""><div class="t"><b>B · Typing</b><span>Typing swaps the icon for the green send arrow.</span></div></a>
+  <a class="rec" href="b-1-sheet.png"><img src="b-1-sheet.png" alt=""><div class="t"><b>B · 1 Share sheet</b><span>Tap opens the iOS share sheet. Copy is the first action.</span></div></a>
+  <a href="b-2-toast.png"><img src="b-2-toast.png" alt=""><div class="t"><b>B · 2 Instant copy</b><span>Tap copies right away and confirms with a toast.</span></div></a>
+  <a class="rec" href="b-idle-dark.png"><img src="b-idle-dark.png" alt=""><div class="t"><b>B · Idle, dark</b><span>The same layout in dark mode.</span></div></a>
+</div>
+
+<h2>C · List pill</h2>
+<p class="note">A “Share” pill styled like “Show less”, right-aligned above the items to buy. It scrolls with the list.</p>
+<div class="grid">
+  <a href="c-idle.png"><img src="c-idle.png" alt=""><div class="t"><b>C · Idle</b><span>Labelled pill above the first item. The composer is unchanged.</span></div></a>
+  <a href="c-1-sheet.png"><img src="c-1-sheet.png" alt=""><div class="t"><b>C · 1 Share sheet</b><span>Tap opens the iOS share sheet.</span></div></a>
+  <a href="c-2-toast.png"><img src="c-2-toast.png" alt=""><div class="t"><b>C · 2 Instant copy</b><span>Tap copies right away. The toast still appears above the composer.</span></div></a>
+</div>
+</body>
+</html>

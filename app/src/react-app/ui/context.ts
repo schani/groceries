@@ -45,6 +45,8 @@ export interface Ctx {
   drag: Drag | null;
   /** a dropped row is still gliding into its slot */
   settling: boolean;
+  /** the share sheet is open */
+  sharing: boolean;
   swallow: number | null;
   dismiss: { pid: number; x: number; y: number } | null;
   fanned: boolean;
